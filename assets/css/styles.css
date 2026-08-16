@@ -507,9 +507,9 @@ footer.dark{border-top:1px solid var(--line-inv);padding-block:clamp(40px,6vh,64
 .season-meta .v{font-family:var(--sans);font-size:13.5px;line-height:1.45;margin-top:4px}
 
 .work-group{margin-top:clamp(44px,7vh,76px)}
-.group-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:8px 30px;margin-bottom:clamp(20px,3.5vh,30px);border-top:1px solid var(--line);padding-top:14px}
-.group-label{font-family:var(--narrow);font-size:11px;font-weight:600;letter-spacing:.22em;text-transform:uppercase;color:var(--rose-bright);white-space:nowrap}
-.group-label b{color:var(--ink);margin-right:8px}
+/*.group-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:8px 30px;margin-bottom:clamp(20px,3.5vh,30px);border-top:1px solid var(--line);padding-top:14px}
+/*.group-label{font-family:var(--narrow);font-size:11px;font-weight:600;letter-spacing:.22em;text-transform:uppercase;color:var(--rose-bright);white-space:nowrap}
+.group-label b{color:var(--ink);margin-right:8px}*/
 .group-desc{font-family:var(--sans);font-size:13.5px;line-height:1.6;color:var(--mute);max-width:60ch}
 
 .group-brief{margin:0 0 clamp(20px,3.5vh,30px)}
@@ -524,4 +524,60 @@ footer.dark{border-top:1px solid var(--line-inv);padding-block:clamp(40px,6vh,64
 @media (max-width:700px){
   .year-head{flex-direction:column;align-items:flex-start;gap:10px}
   .year-meta{text-align:left;padding-bottom:0}
+}
+/* ============================================================
+   SECTION GROUP HEADS — Print work / Designs / Lookbook /
+   Catalogue. Styled to match .strip-head ("The journey").
+   ============================================================ */
+
+.group-head{
+  display: grid;
+  grid-template-columns: minmax(0, 26ch) minmax(0, 1fr);
+  align-items: baseline;
+  column-gap: clamp(24px, 4vw, 64px);
+  row-gap: 10px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(0,0,0,.12);
+  margin-bottom: clamp(26px, 4vh, 44px);
+}
+
+/* The whole label becomes the serif title */
+.group-head .group-label,
+.group-head .lbl{
+  display: block;
+  font-family: var(--serif);
+  font-weight: 400;
+  font-style: normal;
+  font-size: clamp(1.5rem, 2.6vw, 2.1rem);
+  line-height: 1.15;
+  letter-spacing: -.01em;
+  color: inherit;
+  text-transform: none;
+}
+
+/* The <b> inside it becomes the small pink eyebrow above */
+.group-head .group-label > b,
+.group-head .lbl > b{
+  display: block;
+  font-family: var(--narrow);          /* replaced on next line */
+  font-size: .72rem;
+  font-weight: 600;
+  font-style: normal;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--rose-bright);
+  margin-bottom: 12px;
+}
+
+.group-head .group-desc{
+  margin: 0;
+  font-size: .95rem;
+  line-height: 1.65;
+  max-width: 54ch;
+  opacity: .78;
+}
+
+@media (max-width: 760px){
+  .group-head{ grid-template-columns: 1fr; row-gap: 12px; }
+  .group-desc{ max-width: none; }
 }
