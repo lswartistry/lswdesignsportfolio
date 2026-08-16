@@ -1,0 +1,9 @@
+# Netlify config — static site, no build step
+[build]
+  publish = "."
+
+# Short cache on assets so your updates show up quickly (no more 1-year lock)
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=3600"

@@ -174,3 +174,54 @@ To add one for another season:
 **Note:** the flipbook works when you open the folder in a browser (double-click
 `index.html`) or publish the site — the "single-file" previews can't load the
 flipbook pages. Page images around 1100 px wide / ~130 KB each are ideal.
+
+---
+
+## PUBLISH WITH GITHUB + NETLIFY (recommended)
+
+A GitHub repository stores your site's files and their full history.
+Connect it to Netlify once and every future edit auto-deploys.
+
+1. Make sure `index.html` is at the TOP level of the folder you upload
+   (drag the *contents* of the `portfolio` folder, not the folder itself,
+   unless the tool asks for the folder).
+2. Create a GitHub account (github.com) if you don't have one.
+3. Push this folder to a new repository (GitHub Desktop is the easiest way —
+   File → Add local repository → choose the folder → Publish repository).
+4. In Netlify: Add new site → Import an existing project → GitHub →
+   pick the repo → Deploy. Netlify detects publish dir = "." (already set in
+   `netlify.toml`).
+5. Done — every "commit" you push now redeploys the live site automatically.
+
+---
+
+## THE WORK PAGE — YEARS / SEASONS / GROUPS
+
+`work.html` is organised as an archive:
+
+- **Year** (e.g. 2026) → big year number + a list of the seasons inside
+- **Season** (e.g. SS26) → title + client/year meta
+- **Group** within a season → `Lookbook`, `Designs`, `Print work`
+
+### To add a new season
+Copy one `<article class="season" …>…</article>` block, change its `id`
+(e.g. `id="aw26"`), the eyebrow/title, and the groups inside.
+
+### To fill a group
+Each group has a `.group-head` (label + one-line description). Replace the
+`.group-empty` placeholder block with one figure per image:
+
+```html
+<figure class="fig media reveal" data-cursor="View">
+  <img src="assets/img/ss26-cad-01.jpg" alt="CAD flat" loading="lazy" decoding="async">
+  <figcaption class="cap"><b>Fig. 01</b> — your caption</figcaption>
+</figure>
+```
+
+Wrap several figures in `<div class="grid stack">` and give each a width
+(`s4`/`s5`/`s7`/`s8`) and an offset (`o5`/`o6`/`o9`) for the staggered layout.
+The same template is written as a comment inside `work.html` next to each group.
+
+### To add a whole year
+Copy the whole `<div class="year" …>…</div>` block, change the year number
+and the seasons inside it. Add a teaser on `index.html` pointing to it.
