@@ -60,11 +60,12 @@
          To add another year (e.g. 2025), copy this whole <div class="year">
          block, change the year number and the seasons inside it.
          ================================================================ -->
-    <div class="year" id="y2026">
-      <div class="year-head reveal">
-        <h2 class="year-num">2026</h2>
-        <span class="year-meta">SS26 · SS26 Flash · AW26</span>
-      </div>
+  <details class="year" id="y2026" open>
+   <summary class="year-head">
+    <h2 class="year-num">2026</h2>
+    <span class="year-meta">SS26 · SS26 Flash · AW26</span>
+    <span class="year-toggle" aria-hidden="true"></span>
+   </summary>
 
       <!-- ================= SEASON — SS26 ================= -->
       <article class="season" id="ss26">
@@ -300,7 +301,7 @@
 
           <!-- ADD SPREADS — paste one figure per selected spread (2–4 looks best): -->
        <div class="grid stack" style="margin-top:clamp(24px,4vh,40px)">
-  <figure class="fig s6 reveal" data-cursor="View">
+        <figure class="fig s6 reveal" data-cursor="View">
     <div class="media"><img src="assets/img/ss26-cat-01.jpg" alt="Catalogue spread" loading="lazy" decoding="async"></div>
     <figcaption class="cap"><b>Spread</b> — cover </figcaption>
   </figure>
@@ -455,7 +456,35 @@
 </div>
         </div>
       </article>
+    </details>
+    <details class="year" id="y2025">
+  <summary class="year-head">
+    <h2 class="year-num">2025</h2>
+    <span class="year-meta">SS25 · AW25</span>
+    <span class="year-toggle" aria-hidden="true"></span>
+  </summary>
+
+  <article class="season" id="ss25">
+    <header class="season-head grid stack">
+      <div class="s8">
+        <p class="eyebrow">Spring / Summer 25</p>
+        <h3 class="season-title">SS25 <em>— Client name</em></h3>
+      </div>
+      <div class="season-meta s4 o9">
+        <div><div class="k">Client</div><div class="v">Client name</div></div>
+        <div><div class="k">Year</div><div class="v">2025</div></div>
+      </div>
+    </header>
+
+    <div class="work-group">
+      <div class="group-head">
+        <span class="group-label"><b>01</b>Print work</span>
+        <p class="group-desc">Description here.</p>
+      </div>
+      <!-- figures go here -->
     </div>
+  </article>
+</details>
 
     <!-- ================================================================
          PRINT ARCHIVE — original prints not yet in production.

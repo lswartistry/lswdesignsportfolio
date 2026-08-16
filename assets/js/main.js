@@ -269,3 +269,14 @@
 
   window.addEventListener('load', function(){ items = collect(); });
 })();
+// Open the parent <details> when linking to something inside it
+function openToHash(){
+  const id = location.hash.slice(1);
+  if(!id) return;
+  const el = document.getElementById(id);
+  if(!el) return;
+  el.closest('details')?.setAttribute('open','');
+  requestAnimationFrame(()=> el.scrollIntoView({behavior:'smooth', block:'start'}));
+}
+addEventListener('hashchange', openToHash);
+addEventListener('DOMContentLoaded', openToHash);

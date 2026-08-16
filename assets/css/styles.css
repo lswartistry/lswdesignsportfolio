@@ -492,7 +492,6 @@ footer.dark{border-top:1px solid var(--line-inv);padding-block:clamp(40px,6vh,64
 /* ============ WORK ARCHIVE — year / season / group ============ */
 .year{margin-top:clamp(64px,10vh,120px)}
 .year:first-of-type{margin-top:0}
-.year-head{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;border-bottom:1px solid var(--line);padding-bottom:clamp(18px,3vh,28px)}
 .year-num{font-family:var(--serif);font-weight:300;font-size:clamp(3.4rem,8vw,7rem);line-height:.9;letter-spacing:-.03em}
 .year-num em{font-style:italic;color:var(--rose-dark)}
 .year-meta{font-family:var(--narrow);font-size:11px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:var(--mute);text-align:right;padding-bottom:6px}
@@ -584,3 +583,41 @@ footer.dark{border-top:1px solid var(--line-inv);padding-block:clamp(40px,6vh,64
   margin: 0;        /* add — kills the browser's default <p> margin */
   padding-left: 2px;
 }
+/* ---- Collapsible year sections ---- */
+.year > summary.year-head{
+  list-style: none;
+  cursor: pointer;
+  display: flex;
+  align-items: baseline;
+  gap: clamp(14px, 2.5vw, 28px);
+  padding: 22px 0;
+  border-top: 1px solid rgba(0,0,0,.14);
+  user-select: none;
+}
+
+/* kill the native triangle */
+.year > summary.year-head::-webkit-details-marker{ display:none; }
+.year > summary.year-head::marker{ content:""; }
+
+.year > summary.year-head:focus-visible{
+  outline: 2px solid var(--accent, #d6467f);
+  outline-offset: 4px;
+}
+
+/* push the chevron to the right */
+.year-toggle{
+  margin-left: auto;
+  width: 12px; height: 12px;
+  border-right: 1.6px solid currentColor;
+  border-bottom: 1.6px solid currentColor;
+  transform: rotate(45deg);
+  transition: transform .35s cubic-bezier(.4,0,.2,1);
+  opacity: .55;
+  flex: none;
+  align-self: center;
+}
+.year[open] > summary.year-head .year-toggle{
+  transform: rotate(-135deg);
+}
+
+.year > summary.year-head:hover .year-toggle{ opacity: 1; }
