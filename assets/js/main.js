@@ -133,10 +133,11 @@
         form.querySelectorAll('.field, .full:has(.btn)').forEach(function(el){ el.style.display='none'; });
         ok.hidden = false;
       }
-      if (form.getAttribute('data-netlify') !== null){
-        var params = new URLSearchParams(new FormData(form)).toString();
-        fetch('/', { method:'POST', headers:{'Content-Type':'application/x-www-form-urlencoded'}, body: params })
-          .then(done).catch(done);
+      var endpoint = form.getAttribute('action');
+      if (endpoint && endpoint.indexOf('formspree') !== -1){
+        fetch(endpoint, { method:'POST', body:new FormData(form), headers:{'Accept':'application/json'} })
+          .then(function(r){ if (!r.ok) throw new Error('formspree '+r.status); done(); })
+          .catch(done);
       } else {
         done();
       }
