@@ -225,3 +225,60 @@ The same template is written as a comment inside `work.html` next to each group.
 ### To add a whole year
 Copy the whole `<div class="year" …>…</div>` block, change the year number
 and the seasons inside it. Add a teaser on `index.html` pointing to it.
+
+---
+
+## FEATURED PIECE — print to final (the journey view)
+
+At the top of the SS26 season there's a "Featured" group that shows one item
+end-to-end: the print artwork as a large image, then the finished looks in a
+horizontal drag strip. This is the pattern for showing a garment's journey.
+
+To add your own featured piece:
+1. Add your images to `assets/img/` (artwork + finished looks).
+2. Copy the whole `<div class="work-group" id="ss26-featured">…</div>` block
+   (it's inside `work.html`), change the `id`, the captions, and the image
+   file names.
+3. For the drag strip: one `<div class="slide">…</div>` per look. Portrait
+   photos keep `style="aspect-ratio:2/3"` so nothing gets cropped; landscape
+   images can drop the style.
+
+---
+
+## PRINT ARCHIVE (unreleased prints)
+
+At the bottom of `work.html` there's a standalone "Print Archive" section for
+original prints that haven't been used in production. It sits outside the
+years/seasons because it isn't tied to one season.
+
+To add a print: replace the `.group-empty` block inside `#print-archive` with a
+grid of figures (a ready-made template is written as a comment right there in
+`work.html`). One figure per print, e.g.:
+
+```html
+<figure class="fig s4 reveal" data-cursor="View">
+  <div class="media"><img src="assets/img/print-01.jpg" alt="Print 01" loading="lazy" decoding="async"></div>
+  <figcaption class="cap"><b>P-01</b> — name · repeat 64 × 64 cm</figcaption>
+</figure>
+```
+
+Use `s4` for 3-across, `s6` for 2-across, or `s12` for full-width.
+
+---
+
+## CATALOGUE (large PDFs — download, don't flip)
+
+Each season can have a "Catalogue" group (after the Lookbook) for the full
+seasonal catalogue. Because catalogues are large reference documents, they're
+NOT a flipbook — they show a spec-style stats row and a download button.
+
+1. Put your catalogue PDF in `assets/files/` (e.g. `assets/files/ss26-catalogue.pdf`).
+2. In `work.html`, the download button already points there:
+   `href="assets/files/ss26-catalogue.pdf"` (change the file name if yours differs).
+3. Edit the stats to match: `84 <em>pages</em>` → your real page count.
+4. Optionally add 2–4 hand-picked spreads as images (template is commented
+   right inside the catalogue group).
+
+To add a catalogue to another season: copy the whole
+`<div class="work-group" id="ss26-catalogue">…</div>` block and change the id,
+the stats and the PDF link.

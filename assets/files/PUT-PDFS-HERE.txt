@@ -1,0 +1,2 @@
+Put catalogue / lookbook PDFs in this folder.
+Example: ss26-catalogue.pdf  (referenced from work.html as assets/files/ss26-catalogue.pdf)
