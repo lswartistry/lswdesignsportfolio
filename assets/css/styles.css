@@ -678,3 +678,13 @@ footer.dark{border-top:1px solid var(--line-inv);padding-block:clamp(40px,6vh,64
 @media (max-width: 900px){
   .nav-item .sub{ display: none; }   /* overlay handles mobile */
 }
+.overlay .sub-links{
+  padding-left: clamp(28px, 6vw, 64px);
+  margin: -6px 0 10px;
+  display: grid; gap: 2px;
+}
+.overlay .sub-links a{
+  font-size: clamp(15px, 2vw, 18px) !important;
+  opacity: .62;
+}
+.overlay .sub-links a:hover{ opacity: 1; }
