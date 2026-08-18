@@ -18,7 +18,16 @@
   <div class="container">
     <a class="wordmark" href="index.html"><img class="logo logo-light" src="assets/img/logo-light.png" alt="LSW Designs"><img class="logo logo-dark" src="assets/img/logo-dark.png" alt="LSW Designs"><span class="tag">Fashion · Editorial · Content</span></a>
     <nav class="nav" aria-label="Primary">
-      <a href="work.html"><sup>01</sup>Work</a>
+      <div class="nav-item has-sub">
+  <a href="work.html"><sup>01</sup>Work</a>
+  <button class="sub-toggle" aria-expanded="false" aria-controls="workSub" aria-label="Open Work menu">
+    <svg viewBox="0 0 10 6" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M1 1l4 4 4-4"/></svg>
+  </button>
+  <div class="sub" id="workSub">
+    <a href="work.html">Selected work</a>
+    <a href="print-archive.html">Print archive</a>
+  </div>
+</div>
       <a href="services.html" class="active"><sup>02</sup>Services</a>
       <a href="process.html"><sup>03</sup>Process</a>
       <a href="about.html"><sup>04</sup>About</a>

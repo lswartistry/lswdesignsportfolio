@@ -280,3 +280,31 @@ function openToHash(){
 }
 addEventListener('hashchange', openToHash);
 addEventListener('DOMContentLoaded', openToHash);
+/* Nav dropdowns */
+document.querySelectorAll('.nav-item.has-sub').forEach(item => {
+  const btn = item.querySelector('.sub-toggle');
+  const sub = item.querySelector('.sub');
+  if(!btn || !sub) return;
+
+  btn.addEventListener('click', e => {
+    e.preventDefault();
+    const open = sub.classList.toggle('is-open');
+    btn.setAttribute('aria-expanded', open);
+  });
+
+  item.addEventListener('keydown', e => {
+    if(e.key === 'Escape'){
+      sub.classList.remove('is-open');
+      btn.setAttribute('aria-expanded','false');
+      btn.focus();
+    }
+  });
+});
+
+document.addEventListener('click', e => {
+  if(e.target.closest('.nav-item.has-sub')) return;
+  document.querySelectorAll('.sub.is-open').forEach(s => {
+    s.classList.remove('is-open');
+    s.previousElementSibling?.setAttribute?.('aria-expanded','false');
+  });
+});

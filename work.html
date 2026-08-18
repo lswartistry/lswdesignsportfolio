@@ -18,7 +18,16 @@
   <div class="container">
     <a class="wordmark" href="index.html"><img class="logo logo-light" src="assets/img/logo-light.png" alt="LSW Designs"><img class="logo logo-dark" src="assets/img/logo-dark.png" alt="LSW Designs"><span class="tag">Fashion · Editorial · Content</span></a>
     <nav class="nav" aria-label="Primary">
-      <a href="work.html" class="active"><sup>01</sup>Work</a>
+      <div class="nav-item has-sub">
+  <a href="work.html" class="active"><sup>01</sup>Work</a>
+  <button class="sub-toggle" aria-expanded="false" aria-controls="workSub" aria-label="Open Work menu">
+    <svg viewBox="0 0 10 6" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M1 1l4 4 4-4"/></svg>
+  </button>
+  <div class="sub" id="workSub">
+    <a href="work.html">Selected work</a>
+    <a href="print-archive.html">Print archive</a>
+  </div>
+</div>
       <a href="services.html"><sup>02</sup>Services</a>
       <a href="process.html"><sup>03</sup>Process</a>
       <a href="about.html"><sup>04</sup>About</a>
@@ -486,70 +495,13 @@
   </article>
 </details>
 
-    <!-- ================================================================
-         PRINT ARCHIVE — original prints not yet in production.
-         Add one <figure> per print (see the comment template below).
-         ================================================================ -->
-    <div class="year" id="print-archive">
-      <header class="shead" style="margin-bottom:clamp(28px,5vh,48px)">
-        <p class="eyebrow"><span class="bx">Archive</span></p>
-        <div class="shead-main grid stack">
-          <h2 class="shead-title s8">Print <em>Archive</em></h2>
-          <div class="shead-meta s4">
-            <p class="desc">Original prints designed but not yet in production — unreleased artwork, kept as a library.</p>
-          </div>
-        </div>
-      </header>
-
-      <div class="work-group" style="margin-top:0">
-        <div class="group-head">
-          <span class="group-label"><b>∞</b>Unreleased prints</span>
-          <p class="group-desc">Hand-developed artwork, repeats and colourways — available to place in a future collection or for licensing.</p>
-        </div>
-
-
-        <!-- ADDING PRINTS — paste one figure per print, inside a grid: -->
-        <div class="grid stack">
-          <figure class="fig s4 reveal" data-cursor="View">
-            <div class="media"><img src="assets/img/Print-archive-01.jpg" alt="Print 01" loading="lazy" decoding="async"></div>
-            <figcaption class="cap"><b>P-01</b> — Silver mist · repeat 64 × 64 cm</figcaption>
-          </figure>
-          <figure class="fig s4 reveal" data-cursor="View" style="--d:80ms">
-            <div class="media"><img src="assets/img/Print-archive-02.jpg" alt="Print 02" loading="lazy" decoding="async"></div>
-            <figcaption class="cap"><b>P-02</b> — Leopard · repeat 64 × 64 cm</figcaption>
-          </figure>
-          <figure class="fig s4 reveal" data-cursor="View" style="--d:160ms">
-            <div class="media"><img src="assets/img/Print-archive-03.jpg" alt="Print 03" loading="lazy" decoding="async"></div>
-            <figcaption class="cap"><b>P-03</b> — Bordeaux Damask · </figcaption>
-          </figure>
-          <figure class="fig s4 reveal" data-cursor="View" style="--d:160ms">
-            <div class="media"><img src="assets/img/Print-archive-04.jpg" alt="Print 04" loading="lazy" decoding="async"></div>
-            <figcaption class="cap"><b>P-04</b> — Abstract Ivory ·</figcaption>
-          </figure>
-          <figure class="fig s4 reveal" data-cursor="View" style="--d:160ms">
-            <div class="media"><img src="assets/img/Print-archive-05.jpg" alt="Print 05" loading="lazy" decoding="async"></div>
-            <figcaption class="cap"><b>P-05</b> — Dune Tile · repeat 64 × 64 cm</figcaption>
-          </figure>
-          <figure class="fig s4 reveal" data-cursor="View" style="--d:160ms">
-            <div class="media"><img src="assets/img/Print-archive-06.jpg" alt="Print 06" loading="lazy" decoding="async"></div>
-            <figcaption class="cap"><b>P-06</b> — Striped with Graphic  · </figcaption>
-          </figure>
-          <figure class="fig s4 reveal" data-cursor="View" style="--d:160ms">
-            <div class="media"><img src="assets/img/Print-archive-07.jpg" alt="Print 07" loading="lazy" decoding="async"></div>
-            <figcaption class="cap"><b>P-07</b> — Artdeco in fan · </figcaption>
-          </figure>
-          <figure class="fig s4 reveal" data-cursor="View" style="--d:160ms">
-            <div class="media"><img src="assets/img/Print-archive-08.jpg" alt="Print 08" loading="lazy" decoding="async"></div>
-            <figcaption class="cap"><b>P-08</b> — Artdeco Bloom · </figcaption>
-          </figure>
-          <figure class="fig s4 reveal" data-cursor="View" style="--d:160ms">
-            <div class="media"><img src="assets/img/Print-archive-09.jpg" alt="Print 09" loading="lazy" decoding="async"></div>
-            <figcaption class="cap"><b>P-09</b> — Painted Polks · </figcaption>
-          </figure>
-        </div>
-        
-      </div>
-    </div>
+  <div class="work-group">
+  <div class="group-head">
+    <span class="group-label"><b>→</b>Print archive</span>
+    <p class="group-desc">Original prints not yet in production — a library of unreleased artwork.</p>
+  </div>
+  <p><a class="btn" href="print-archive.html">View the print archive <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 10h12M11 5l5 5-5 5"/></svg></a></p>
+</div>
 
   </div>
 </section>
