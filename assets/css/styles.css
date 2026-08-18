@@ -640,7 +640,7 @@ footer.dark{border-top:1px solid var(--line-inv);padding-block:clamp(40px,6vh,64
   left: -14px;
   min-width: 200px;
   padding: 8px;
-  background: var(--bg, #0D0D0D);
+  background: var(--bg, #F2EFEA););
   border: 1px solid rgba(0,0,0,.10);
   box-shadow: 0 18px 40px -18px rgba(0,0,0,.28);
   display: grid;
