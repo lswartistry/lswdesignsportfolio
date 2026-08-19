@@ -124,22 +124,63 @@
   }
 
   /* ---------- inquiry form ---------- */
+  /* ---------- inquiry form (Formspree) ---------- */
   var form = document.getElementById('inquiry');
-  var ok = document.getElementById('formOk');
-  if (form){
+  var ok   = document.getElementById('formOk');
+
+  if (form && ok){
     form.addEventListener('submit', function(e){
       e.preventDefault();
-      function done(){
-        form.querySelectorAll('.field, .full:has(.btn)').forEach(function(el){ el.style.display='none'; });
+
+      var btn = form.querySelector('button[type="submit"]');
+      var endpoint = form.getAttribute('action');
+
+      // basic validation — these two are worth requiring
+      var email = form.querySelector('#f-email');
+      if (!email.value.trim() || !email.checkValidity()){
+        email.focus();
+        email.setAttribute('aria-invalid','true');
+        return;
+      }
+      email.removeAttribute('aria-invalid');
+
+      if (btn){ btn.disabled = true; btn.dataset.label = btn.innerHTML; btn.textContent = 'Sending…'; }
+
+      function showOk(){
+        form.querySelectorAll('.field, .full').forEach(function(el){
+          if (el !== ok) el.style.display = 'none';
+        });
         ok.hidden = false;
+        ok.scrollIntoView({ behavior:'smooth', block:'center' });
       }
-      if (form.getAttribute('data-netlify') !== null){
-        var params = new URLSearchParams(new FormData(form)).toString();
-        fetch('/', { method:'POST', headers:{'Content-Type':'application/x-www-form-urlencoded'}, body: params })
-          .then(done).catch(done);
-      } else {
-        done();
+
+      function showError(msg){
+        if (btn){ btn.disabled = false; btn.innerHTML = btn.dataset.label || 'Send inquiry'; }
+        var err = form.querySelector('.form-err');
+        if (!err){
+          err = document.createElement('p');
+          err.className = 'form-err full';
+          form.appendChild(err);
+        }
+        err.textContent = msg;
       }
+
+      fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Accept': 'application/json' },
+        body: new FormData(form)
+      })
+      .then(function(res){
+        if (res.ok) { showOk(); return; }
+        return res.json().then(function(data){
+          var m = (data.errors && data.errors.map(function(x){ return x.message; }).join(', '))
+                  || 'Something went wrong. Please email me directly.';
+          showError(m);
+        });
+      })
+      .catch(function(){
+        showError('Network error — please email lswesleydesigns@gmail.com directly.');
+      });
     });
   }
 })();

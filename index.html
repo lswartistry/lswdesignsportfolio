@@ -254,7 +254,9 @@
     <p class="contact-note">Or send the short brief below — the fields that matter for fashion.</p>
 
     <div class="contact-grid">
-           <form class="form" id="inquiry" name="inquiry" action="https://formspree.io/f/maewdrlg" method="POST" novalidate>
+      <form class="form" id="inquiry" name="inquiry" action="https://formspree.io/f/maewdrlg" method="POST" novalidate>
+        <input type="hidden" name="_subject" value="New inquiry — LSW Designs">
+        <input type="hidden" name="_replyto" value="">
         <input type="text" name="_gotcha" class="honeypot" tabindex="-1" autocomplete="off" aria-hidden="true">
         <div class="field">
           <label for="f-name">Name</label>
@@ -262,7 +264,7 @@
         </div>
         <div class="field">
           <label for="f-email">Email</label>
-          <input id="f-email" name="email" type="email" autocomplete="email" placeholder="you@brand.com">
+          <input id="f-email" name="email" type="email" autocomplete="email" placeholder="lswesleydesigns@gmail.com" required>
         </div>
         <div class="field">
           <label for="f-type">Project type</label>
