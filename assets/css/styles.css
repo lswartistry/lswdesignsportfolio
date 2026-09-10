@@ -738,3 +738,21 @@ footer.dark{border-top:1px solid var(--line-inv);padding-block:clamp(40px,6vh,64
 .lb-count{color:var(--mute-inv);font-family:var(--narrow);font-size:11px;letter-spacing:.18em}
 body.locked{overflow:hidden}
 @media (max-width:640px){.lb-prev{left:8px}.lb-next{right:8px}.lb-close{top:10px;right:12px}}
+/* ===== FINAL APPENDIX — bonus fixes + lightbox ===== */
+.group-empty .v .note{display:none}  /* hides builder notes; must match line-521 selector exactly */
+.group-empty{border-style:dashed;border-radius:12px}
+.foot-mail{font-family:var(--narrow);font-size:10.5px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:var(--paper);text-decoration:none}
+.foot-mail:hover{color:var(--rose-soft)}
+.lightbox{position:fixed;inset:0;z-index:999;background:rgba(13,13,13,.94);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:4vmin;opacity:0;pointer-events:none;transition:opacity .3s}
+.lightbox.open{opacity:1;pointer-events:auto}
+.lightbox img{max-width:min(1100px,92vw);max-height:78vh;border-radius:10px;box-shadow:0 30px 80px rgba(0,0,0,.5)}
+.lb-close{position:absolute;top:18px;right:22px;background:none;border:0;color:var(--paper);font-size:34px;line-height:1;cursor:pointer}
+.lb-close:hover{color:var(--rose-soft)}
+.lb-prev,.lb-next{position:absolute;top:50%;transform:translateY(-50%);width:46px;height:46px;border-radius:999px;display:flex;align-items:center;justify-content:center;background:rgba(245,241,236,.08);border:1px solid var(--line-inv);color:var(--paper);cursor:pointer;transition:background .3s,border-color .3s}
+.lb-prev:hover,.lb-next:hover{background:var(--rose-bright);border-color:var(--rose-bright)}
+.lb-prev{left:18px}
+.lb-next{right:18px}
+.lb-cap{color:var(--paper);font-family:var(--narrow);font-size:12px;font-weight:600;letter-spacing:.18em;text-transform:uppercase}
+.lb-count{color:var(--mute-inv);font-family:var(--narrow);font-size:11px;letter-spacing:.18em}
+body.locked{overflow:hidden}
+@media (max-width:640px){.lb-prev{left:8px}.lb-next{right:8px}.lb-close{top:10px;right:12px}}
