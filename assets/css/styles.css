@@ -698,3 +698,29 @@ footer.dark{border-top:1px solid var(--line-inv);padding-block:clamp(40px,6vh,64
 [aria-invalid="true"]{
   border-color: #E4737B !important;
 }
+/* ===== PATCH 3 — white cards for packshots & spec sheets ===== */
+#feat .slide .media,
+.media:has(> img[src*="-end-"]),
+.media:has(> img[src*="print-info"]){
+  background:#fff;
+  padding:clamp(10px,1.4vw,16px);
+  border:1px solid var(--line);
+  border-radius:14px;
+  box-shadow:0 12px 30px rgba(13,13,13,.10);
+}
+#feat .slide .media img,
+.media:has(> img[src*="-end-"]) img,
+.media:has(> img[src*="print-info"]) img{border-radius:8px}
+/* ===== PATCH 4 — work hero: CTAs + visual strip ===== */
+.hero-cta{display:flex;flex-wrap:wrap;gap:14px;margin-top:clamp(20px,3vh,30px)}
+.btn-ghost{display:inline-flex;align-items:center;gap:12px;border:1px solid var(--line-inv);color:var(--paper);font-family:var(--narrow);font-size:12px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;text-decoration:none;padding:19px 30px;border-radius:999px;transition:border-color .3s,color .3s,transform .3s}
+.btn-ghost:hover{border-color:var(--rose-bright);color:var(--rose-soft);transform:translateY(-2px)}
+.hero-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(12px,2vw,22px);margin-top:clamp(26px,4.5vh,44px)}
+.hero-shot{margin:0}
+.hero-shot .media{aspect-ratio:3/4;border:1px solid var(--line-inv);border-radius:12px}
+.hero-shot .cap{color:var(--mute-inv);margin-top:10px}
+.page-hero .sub-small{font-size:13px;margin-top:20px;opacity:.8}
+@media (max-width:640px){
+  .hero-strip{grid-template-columns:repeat(3,74vw);overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:10px}
+  .hero-shot{scroll-snap-align:start}
+}

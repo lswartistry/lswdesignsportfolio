@@ -79,8 +79,13 @@
       var max = track.scrollWidth - track.clientWidth;
       var pct = max > 0 ? (track.scrollLeft / max) * 100 : 0;
       if (bar) bar.style.width = Math.max(pct, 2) + '%';
-      var w = slides[0] ? slides[0].offsetWidth + parseFloat(getComputedStyle(track).columnGap || 16) : 300;
-      idx = Math.round(track.scrollLeft / w);
+       var cs = getComputedStyle(track);
+      var gap = parseFloat(cs.columnGap);
+      if (!isFinite(gap)) gap = parseFloat(cs.gap);
+      if (!isFinite(gap)) gap = 16;
+      var w = slides[0] ? (slides[0].offsetWidth || 300) + gap : 300;
+      if (!isFinite(w) || w <= 0) w = 300;
+      idx = Math.max(0, Math.min(slides.length - 1, Math.round(track.scrollLeft / w)));
       if (count) count.textContent = String(idx+1).padStart(2,'0') + ' / ' + String(slides.length).padStart(2,'0');
     }
     track.addEventListener('scroll', function(){ requestAnimationFrame(update); }, {passive:true});
@@ -101,9 +106,11 @@
       if (Math.abs(dx) > 4){ moved = true; track.dataset.moved = '1'; }
       track.scrollLeft = startL - dx;
     });
-    window.addEventListener('pointerup', function(){
+   window.addEventListener('pointerup', function(){
       if (down){ down=false; track.classList.remove('dragging'); }
     });
+    window.addEventListener('load', update);
+    window.addEventListener('resize', function(){ requestAnimationFrame(update); });
     update();
   });
 
