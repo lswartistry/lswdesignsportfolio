@@ -762,10 +762,19 @@ body.locked{overflow:hidden}
   .grid.stack .fig{display:flex;flex-direction:column}
   .grid.stack .fig+.fig{margin-top:0}
   .grid.stack .fig .cap{margin-top:12px}
-  /* uniform aligned rows — print work & designs tiles only (s3/s4); spreads stay natural */
   .grid.stack .fig.s3 .media,.grid.stack .fig.s4 .media{height:clamp(280px,26vw,480px);border-radius:14px;overflow:hidden}
   .grid.stack .fig.s3 .media img,.grid.stack .fig.s4 .media img{width:100%;height:100%;object-fit:cover;object-position:center;display:block}
 }
+.grid.stack .media:has(img[src*="Tshirtprint"]),
+.grid.stack .media:has(img[src*="Print-archive"]),
+.grid.stack .media:has(img[src*="-cad-"]),
+.grid.stack .media:has(img[src*="-end-"]),
+.grid.stack .media:has(img[src*="print-info"]){background:#fff;border:1px solid var(--line);padding:clamp(8px,1vw,14px)}
+.grid.stack .media:has(img[src*="Tshirtprint"]) img,
+.grid.stack .media:has(img[src*="Print-archive"]) img,
+.grid.stack .media:has(img[src*="-cad-"]) img,
+.grid.stack .media:has(img[src*="-end-"]) img,
+.grid.stack .media:has(img[src*="print-info"]) img{object-fit:contain}
 /* artwork sheets & garment flats: show in full on white cards (never cropped) */
 .grid.stack .media:has(img[src*="Tshirtprint"]),
 .grid.stack .media:has(img[src*="Print-archive"]),
