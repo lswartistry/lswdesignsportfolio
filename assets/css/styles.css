@@ -788,3 +788,22 @@ body.locked{overflow:hidden}
 .grid.stack .media:has(img[src*="-cad-"]) img,
 .grid.stack .media:has(img[src*="-end-"]) img,
 .grid.stack .media:has(img[src*="print-info"]) img{object-fit:contain}
+/* ===== G2 — nav dropdown: real tokens, adapts to masthead state ===== */
+.sub{
+  background:var(--black);
+  border:1px solid var(--line-inv);
+  border-radius:12px;
+  box-shadow:0 18px 40px -18px rgba(0,0,0,.45);
+}
+.sub a{color:var(--paper)}
+.sub a:hover{background:rgba(245,241,236,.08)}
+.sub a.active{color:var(--rose-soft)}
+/* light masthead (scrolled) -> light dropdown */
+.masthead.scrolled .sub{
+  background:var(--paper);
+  border:1px solid var(--line);
+  box-shadow:0 18px 40px -18px rgba(13,13,13,.35);
+}
+.masthead.scrolled .sub a{color:var(--ink)}
+.masthead.scrolled .sub a:hover{background:rgba(13,13,13,.06)}
+.masthead.scrolled .sub a.active{color:var(--rose-bright)}
