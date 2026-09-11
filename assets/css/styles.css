@@ -837,3 +837,9 @@ body.locked{overflow:hidden}
   .overlay .sub-links a{font-size:clamp(24px,5.4vw,34px) !important;opacity:.9;gap:14px}
   .overlay .sub-links a::before{font-size:.72em}
 }
+/* ===== G6 — Instagram links (footer, mobile menu, contact) ===== */
+.foot-ig{font-family:var(--narrow);font-size:10.5px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:var(--paper);text-decoration:none;display:inline-flex;align-items:center;gap:8px}
+.foot-ig svg{width:15px;height:15px;color:var(--rose-bright)}
+.foot-ig:hover{color:var(--rose-soft)}
+.ig-link{color:var(--rose-soft);text-decoration:none;font-weight:700}
+.ig-link:hover{color:#fff;text-decoration:underline}
