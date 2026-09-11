@@ -807,3 +807,22 @@ body.locked{overflow:hidden}
 .masthead.scrolled .sub a{color:var(--ink)}
 .masthead.scrolled .sub a:hover{background:rgba(13,13,13,.06)}
 .masthead.scrolled .sub a.active{color:var(--rose-bright)}
+/* ===== G3 — keep desktop nav on tablets/small laptops (901-1024px) ===== */
+@media (min-width:901px) and (max-width:1024px){
+  .nav{display:flex}
+  .mast-avail{display:flex}
+  .menu-btn{display:none}
+}
+/* ===== G4 — services rows: desc was falling into the 40px column ===== */
+@media (max-width:1024px){
+  .svc-compact .one{grid-column:2}
+}
+@media (max-width:600px){
+  .svc-compact a{row-gap:8px}
+  .svc-compact .one{grid-column:2;max-width:44ch}
+}
+/* ===== G5 — mobile menu: style the Print archive sub-link properly ===== */
+.overlay .sub-links{padding-left:clamp(40px,9vw,88px);margin:2px 0 12px;gap:8px}
+.overlay .sub-links a{font-size:clamp(18px,2.6vw,24px) !important;font-style:italic;opacity:.72;display:flex;align-items:center;gap:12px}
+.overlay .sub-links a::before{content:"\2192";font-family:var(--narrow);font-style:normal;color:var(--rose-bright);font-size:.8em}
+.overlay .sub-links a:hover{opacity:1}
