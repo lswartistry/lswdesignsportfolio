@@ -13,7 +13,7 @@
   --line-inv:rgba(245,241,236,.16);
   --mute:rgba(13,13,13,.6);
   --mute-inv:rgba(245,241,236,.64);
-  --serif:'Fraunces',Georgia,'Times New Roman',serif;
+  --serif:'Playfair Display',Georgia,'Times New Roman',serif;
   --sans:'Archivo','Helvetica Neue',Arial,sans-serif;
   --narrow:'Archivo Narrow','Arial Narrow',Arial,sans-serif;
   --ease:cubic-bezier(.65,.05,.36,1);
