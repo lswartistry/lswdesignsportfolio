@@ -843,3 +843,37 @@ body.locked{overflow:hidden}
 .foot-ig:hover{color:var(--rose-soft)}
 .ig-link{color:var(--rose-soft);text-decoration:none;font-weight:700}
 .ig-link:hover{color:#fff;text-decoration:underline}
+/* ===== G8 — print-to-final journey strip ===== */
+.journey{display:grid;grid-template-columns:repeat(4,1fr);gap:clamp(14px,2vw,26px);margin-top:clamp(20px,3.5vh,36px)}
+.jstep{display:flex;flex-direction:column;position:relative}
+.jnum{font-family:var(--narrow);font-size:11px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:var(--rose-bright);margin:0 0 10px;display:flex;align-items:center;gap:10px}
+.jnum::after{content:"";order:2;flex:1;height:1px;background:var(--line)}
+.jstep .media{aspect-ratio:4/5;background:#fff;border:1px solid var(--line);border-radius:14px;padding:clamp(8px,1vw,14px);overflow:hidden}
+.jstep .media img{width:100%;height:100%;object-fit:contain;display:block}
+.jstep.cover .media img{object-fit:cover}
+.jstep .cap{margin-top:10px}
+.jstep:not(:last-child)::after{content:"\2192";position:absolute;top:45%;right:calc(-1 * clamp(14px,2vw,26px) - 2px);transform:translateY(-50%);font-family:var(--narrow);color:var(--rose-bright);font-size:20px;z-index:2;text-shadow:0 0 6px var(--paper),0 0 6px var(--paper)}
+@media (max-width:900px){
+  .journey{grid-template-columns:1fr 1fr;gap:clamp(14px,3vw,22px)}
+  .jstep:nth-child(2)::after{content:none}
+}
+@media (max-width:520px){
+  .jstep:not(:last-child)::after{display:none}
+  .jnum{font-size:10px;letter-spacing:.16em}
+}
+
+/* ===== G7 — tech pack & document sheets show full on white cards ===== */
+.grid.stack .media:has(img[src*="tp-"]),
+.grid.stack .media:has(img[src*="mc-"]){background:#fff;border:1px solid var(--line);padding:clamp(8px,1vw,14px)}
+.grid.stack .media:has(img[src*="tp-"]) img,
+.grid.stack .media:has(img[src*="mc-"]) img{object-fit:contain}
+
+/* ===== G9 — T-shirt graphics section ===== */
+.journey.j3{grid-template-columns:repeat(3,1fr)}
+.jlead{margin-top:clamp(24px,4vh,40px);font-size:13px}
+@media (max-width:900px){
+  .journey.j3{grid-template-columns:1fr}
+  .journey.j3 .jstep::after{display:none}
+}
+/* artworks must never crop — beats G1's s3 cover rule */
+.grid.stack .fig.s3 .media:has(img[src*="Tshirtprint"]) img{object-fit:contain}
