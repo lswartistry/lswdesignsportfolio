@@ -872,8 +872,8 @@ body.locked{overflow:hidden}
 .journey.j3{grid-template-columns:repeat(3,1fr)}
 .jlead{margin-top:clamp(24px,4vh,40px);font-size:13px}
 @media (max-width:900px){
-  .journey.j3{grid-template-columns:1fr}
-  .journey.j3 .jstep::after{display:none}
+  .journey.j3{grid-template-columns:1fr 1fr;gap:clamp(14px,3vw,22px)}
+  .journey.j3 .jstep:nth-child(2)::after{content:none}
 }
 /* artworks must never crop — beats G1's s3 cover rule */
 .grid.stack .fig.s3 .media:has(img[src*="Tshirtprint"]) img{object-fit:contain}
