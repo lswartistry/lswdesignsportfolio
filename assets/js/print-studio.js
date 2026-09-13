@@ -17,7 +17,7 @@
      drape: 0..1  subtle pattern bend with the folds
      fabric: 0..1 strength of the fabric-lighting transfer            */
   var PRODUCTS = [
-    { id: "wallpaper", label: "Wallpaper",     file: "mock-wallpaper.jpg", mask: null,               base: 30, drape: 0,    fabric: 0.25 },
+    { id: "wallpaper", label: "Wallpaper",     file: "mock-wallpaper.jpg", mask: "mask-wallpaper.png",               base: 30, drape: 0,    fabric: 0.25 },
     { id: "dress",     label: "Dress",         file: "mock-dress.jpg",     mask: "mask-dress.png",   base: 28, drape: 0.5,  fabric: 1.0 },
     { id: "bikini",    label: "Bikini",        file: "mock-bikini.jpg",    mask: "mask-bikini.png",  base: 22, drape: 0.4,  fabric: 1.0 },
     { id: "cushion",   label: "Cushion 45\u00D745", file: "mock-cushion.jpg", mask: "mask-cushion.png", base: 38, drape: 0,  fabric: 0.9 },
