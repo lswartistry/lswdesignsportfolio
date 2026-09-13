@@ -74,3 +74,10 @@ body.locked{overflow:hidden}
 .ps-sw img{width:60px;height:60px;object-fit:cover;border-radius:9px;display:block;background:#EAE4DB}
 .ps-sw span{font-family:var(--narrow,Arial Narrow,sans-serif);font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--black,#0D0D0D);line-height:1.25;text-align:center;word-break:break-word}
 .ps-sw.on span{color:var(--rose-bright,#E8368F)}
+
+/* ===== PS v6.4 — watermark overlay on grid thumbnails =====
+   White logos (::after) over a faint dark offset copy (::before),
+   so the mark also reads on light prints. */
+.fig .media{position:relative}
+.fig .media::before,.fig .media::after{content:"";position:absolute;inset:0;background:url(../img/Watermark.png) center center/cover no-repeat;pointer-events:none}
+.fig .media::before{filter:brightness(0);opacity:.38;transform:translate(1px,2px)}

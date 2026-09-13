@@ -1,11 +1,15 @@
 /* ==========================================================================
-   PRINT STUDIO v6.2 — Patternbank-style product try-on + COLOURWAYS
+   PRINT STUDIO v6.4 — Patternbank-style product try-on + COLOURWAYS
    v6.1: solidifyMask() — mask interiors forced fully opaque so the white
    product photo can't ghost through dark prints (rug streak, dress/bikini
    veil). Edge anti-aliasing preserved. Pair with repaired mask-rug.png.
    v6.2: edge-aware highlight suppression in buildLighting() — kills the fake
    white halos the screen pass painted around strong photo edges (wallpaper
    ladder/plant/baseboard). Soft shading + fine texture untouched.
+   v6.3: watermark overlay — assets/img/Watermark.png drawn cover-fit on top
+   of every popup mockup (canvas) + over grid thumbnails (CSS ::after).
+   v6.4: faint dark offset copy behind the watermark logos (canvas + CSS
+   ::before) so the white mark also reads on light prints.
    Same engine as v5 (mask clip + fabric-lighting transfer), plus:
    - Any <figure class="fig"> can declare colourways via data attributes:
 
@@ -42,10 +46,12 @@
   ];
   var MOCK_DIR = "assets/img/mockups/";
   var MASK_DIR = "assets/img/masks/";
+  var WM_SRC = "assets/img/Watermark.png";
 
   /* ---------- state ---------- */
   var prints = [], curPrint = 0, curProd = 0, curCW = 0, scale = 100;
   var mockImgs = {}, maskImgs = {}, lightCache = {}, open = false;
+  var wmImg = null, wmTried = false, wmShadow = null;
 
   /* ---------- build the popup once ---------- */
   var root = document.createElement("div");
@@ -417,6 +423,37 @@
       tx.fillStyle = "rgba(232,54,143,.45)";
       tx.fillRect(0, 0, tint.width, tint.height);
       ctx.drawImage(tint, 0, 0, W, H);
+    }
+
+    /* v6.4: watermark overlay (cover-fit, topmost): faint dark offset copy
+       behind the white logos so the mark also reads on light prints.
+       Loads once; if missing, the popup simply renders without it. */
+    if (wmImg) {
+      var iw = wmImg.naturalWidth || wmImg.width, ih = wmImg.naturalHeight || wmImg.height;
+      if (iw && ih) {
+        var s = Math.max(W / iw, H / ih), dw = iw * s, dh = ih * s;
+        var dx = (W - dw) / 2, dy = (H - dh) / 2;
+        if (!wmShadow) {
+          try {
+            var sc = mkCanvas(iw, ih), sx = sc.getContext("2d");
+            sx.drawImage(wmImg, 0, 0);
+            sx.globalCompositeOperation = "source-in";
+            sx.fillStyle = "#000";
+            sx.fillRect(0, 0, iw, ih);
+            wmShadow = sc;
+          } catch (e) { wmShadow = false; }
+        }
+        if (wmShadow) {
+          var ox = Math.max(1, Math.round(W * 0.0018)), oy = Math.max(2, Math.round(W * 0.0025));
+          ctx.globalAlpha = 0.38;
+          ctx.drawImage(wmShadow, dx + ox, dy + oy, dw, dh);
+          ctx.globalAlpha = 1;
+        }
+        ctx.drawImage(wmImg, dx, dy, dw, dh);
+      }
+    } else if (!wmTried) {
+      wmTried = true;
+      loadImg(WM_SRC).then(function (im) { if (im) { wmImg = im; if (open) render(); } });
     }
   }
 
