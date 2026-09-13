@@ -52,7 +52,7 @@
     var mx=0,my=0,cx=0,cy=0;
     document.addEventListener('mousemove', function(e){ mx=e.clientX; my=e.clientY; });
     function loop(){
-      cx += (mx-cx)*0.35; cy += (my-cy)*0.35;
+      cx += (mx-cx)*0.35; cy += (my-cy)*0.55;
       cursor.style.transform = 'translate3d('+cx+'px,'+cy+'px,0) translate(-50%,-160%) scale('+ (cursor.classList.contains('on')?1:0.7) +')';
       requestAnimationFrame(loop);
     }
