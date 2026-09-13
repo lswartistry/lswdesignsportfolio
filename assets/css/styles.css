@@ -877,3 +877,6 @@ body.locked{overflow:hidden}
 }
 /* artworks must never crop — beats G1's s3 cover rule */
 .grid.stack .fig.s3 .media:has(img[src*="Tshirtprint"]) img{object-fit:contain}
+/* ===== G11 — Designs garment photos join the white-card family ===== */
+.grid.stack .media:has(img[src*="Muticolour"]){background:#fff;border:1px solid var(--line);padding:clamp(8px,1vw,14px)}
+.grid.stack .media:has(img[src*="Muticolour"]) img{object-fit:contain}
