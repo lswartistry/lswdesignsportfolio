@@ -1,48 +1,36 @@
 /* ==========================================================================
-   PRINT STUDIO v2 — try any archive print on products, live in the browser
-   Realism engine: silhouette zones + drape warp + multiply (fabric texture)
-   + highlight sheen. Click a print → popup → product tabs + repeat scale.
+   PRINT STUDIO v5 — Patternbank-style product try-on
+   Architecture (same as Patternbank's product views): every mockup photo
+   ships with a pre-cut ALPHA MASK (mask-<product>.png). The pattern is
+   tiled in the browser, clipped by that mask (destination-in), then a
+   fabric-lighting map (fold shadows / weave / highlights, normalised from
+   the photo) is applied THROUGH the print. Result: the print sits inside
+   the product, at its true silhouette, at any repeat scale.
+   Swap a mockup photo or mask anytime - same filename, zero code changes.
+   #debug in the URL tints the mask so you can check the cutout.
    ========================================================================== */
 (function () {
   "use strict";
 
-  /*
-    areas: print zones as [x%, y%, w%, h%] of the photo (one per garment panel;
-           the pattern flows continuously across zones because every fill is
-           anchored to the same canvas origin)
-    base:  repeat width at 100% scale, as % of photo width
-    drape: 0..1 — how much the pattern bends with the fabric folds
-    sheen: 0..0.25 — strength of the highlight pass (fold lights on the print)
-  */
-  /* zones = polygons, points as [x%, y%, ...] of the photo — the print is
-     clipped to the garment's real silhouette (bodice quads, triangle cups,
-     flared skirt), and the pattern flows seamlessly across zones. */
+  /* mask : alpha cutout of the product (white PNG w/ alpha), same framing as file
+     base : repeat width at 100% scale, % of photo width
+     drape: 0..1  subtle pattern bend with the folds
+     fabric: 0..1 strength of the fabric-lighting transfer            */
   var PRODUCTS = [
-    { id: "wallpaper", label: "Wallpaper", file: "mock-wallpaper.jpg",
-      zones: [[3,3, 97,3, 97,89, 3,89]], base: 30, drape: 0, sheen: 0 },
-    { id: "dress", label: "Dress", file: "mock-dress.jpg",
-      zones: [[38,16, 64,16, 69,41, 32,41],      /* bodice */
-              [32,41, 69,41, 79,89, 22,89]],     /* skirt  */
-      base: 32, drape: 0.8, sheen: 0.15 },
-    { id: "bikini", label: "Bikini", file: "mock-bikini.jpg",
-      zones: [[39,28, 43,34, 43,52, 15,52, 17,46],  /* left cup  */
-              [61,28, 57,34, 57,52, 85,52, 83,46],  /* right cup */
-              [11,61, 86,61, 64,91, 36,91]],        /* brief     */
-      base: 26, drape: 0.5, sheen: 0.18 },
-    { id: "cushion", label: "Cushion 45\u00D745", file: "mock-cushion.jpg",
-      zones: [[17,20, 67,20, 67,70, 17,70]], base: 46, drape: 0.35, sheen: 0.16 },
-    { id: "tote", label: "Tote bag", file: "mock-tote.jpg",
-      zones: [[31,52, 63,52, 63,82, 31,82]], base: 30, drape: 0.25, sheen: 0.10 },
-    { id: "notebook", label: "Notebook A5", file: "mock-notebook.jpg",
-      zones: [[25,14, 70,14, 70,84, 25,84]], base: 40, drape: 0, sheen: 0 },
-    { id: "rug", label: "Rug", file: "mock-rug.jpg",
-      zones: [[10,14, 86,14, 86,82, 10,82]], base: 38, drape: 0, sheen: 0.05 }
+    { id: "wallpaper", label: "Wallpaper",     file: "mock-wallpaper.jpg", mask: null,               base: 30, drape: 0,    fabric: 0.25 },
+    { id: "dress",     label: "Dress",         file: "mock-dress.jpg",     mask: "mask-dress.png",   base: 28, drape: 0.5,  fabric: 1.0 },
+    { id: "bikini",    label: "Bikini",        file: "mock-bikini.jpg",    mask: "mask-bikini.png",  base: 22, drape: 0.4,  fabric: 1.0 },
+    { id: "cushion",   label: "Cushion 45\u00D745", file: "mock-cushion.jpg", mask: "mask-cushion.png", base: 38, drape: 0,  fabric: 0.9 },
+    { id: "tote",      label: "Tote bag",      file: "mock-tote.jpg",      mask: "mask-tote.png",    base: 26, drape: 0,    fabric: 0.85 },
+    { id: "notebook",  label: "Notebook A5",   file: "mock-notebook.jpg",  mask: "mask-notebook.png",base: 40, drape: 0,    fabric: 0.3 },
+    { id: "rug",       label: "Rug",           file: "mock-rug.jpg",       mask: "mask-rug.png",     base: 34, drape: 0,    fabric: 0.6 }
   ];
   var MOCK_DIR = "assets/img/mockups/";
+  var MASK_DIR = "assets/img/masks/";
 
   /* ---------- state ---------- */
   var prints = [], curPrint = 0, curProd = 0, scale = 100;
-  var mockImgs = {}, open = false;
+  var mockImgs = {}, maskImgs = {}, lightCache = {}, open = false;
 
   /* ---------- build the popup once ---------- */
   var root = document.createElement("div");
@@ -83,43 +71,88 @@
       var im = fig.querySelector(".media img");
       var cap = fig.querySelector(".cap");
       if (!im || !cap) return;
-      var full = cap.textContent.trim();               /* "P-03 — Bordeaux Damask · repeat…" */
+      var full = cap.textContent.trim();
       var dash = full.indexOf("\u2014");
       if (dash < 0) return;
       var code = full.slice(0, dash).trim();
       var rest = full.slice(dash + 1).trim();
       var dot  = rest.indexOf("\u00B7");
-      var name = dot > -1 ? rest.slice(0, dot).trim() : rest;
-      var meta = dot > -1 ? rest.slice(dot + 1).trim() : "";
-      prints.push({ code: code, name: name, meta: meta, img: im });
+      prints.push({
+        code: code,
+        name: dot > -1 ? rest.slice(0, dot).trim() : rest,
+        meta: dot > -1 ? rest.slice(dot + 1).trim() : "",
+        img: im
+      });
     });
   }
 
-  /* ---------- image helpers ---------- */
+  /* ---------- helpers ---------- */
   function loadImg(src) {
-    return new Promise(function (res, rej) {
+    return new Promise(function (res) {
       var im = new Image();
       im.onload = function () { res(im); };
-      im.onerror = rej;
+      im.onerror = function () { res(null); };
       im.src = src;
     });
   }
-  function preloadMocks() {
+  function mkCanvas(w, h) {
+    var c = document.createElement("canvas");
+    c.width = w; c.height = h;
+    return c;
+  }
+  function preloadAssets() {
     return Promise.all(PRODUCTS.map(function (p) {
-      if (mockImgs[p.id]) return Promise.resolve(mockImgs[p.id]);
-      return loadImg(MOCK_DIR + p.file).then(function (im) { mockImgs[p.id] = im; return im; });
+      var jobs = [];
+      if (!mockImgs[p.id]) {
+        jobs.push(loadImg(MOCK_DIR + p.file).then(function (im) { mockImgs[p.id] = im; }));
+      }
+      if (p.mask && !maskImgs[p.id]) {
+        jobs.push(loadImg(MASK_DIR + p.mask).then(function (im) { maskImgs[p.id] = im; }));
+      }
+      return Promise.all(jobs);
     }));
   }
 
-  /* ---------- drape warp: shift rows horizontally with a soft wave ----------
-     The wave grows toward the bottom of the zone, so hems swing like fabric. */
+  /* ---------- fabric lighting map (normalised fold shading) ---------- */
+  function buildLighting(base) {
+    try {
+      var w = 220, h = Math.max(2, Math.round(220 * base.height / base.width));
+      var c = mkCanvas(w, h);
+      var cx = c.getContext("2d");
+      cx.drawImage(base, 0, 0, w, h);
+      var d = cx.getImageData(0, 0, w, h).data;
+
+      var bw = Math.max(2, Math.round(w / 6)), bh = Math.max(2, Math.round(h / 6));
+      var c2 = mkCanvas(bw, bh);
+      c2.getContext("2d").drawImage(c, 0, 0, bw, bh);
+      var c3 = mkCanvas(w, h);
+      c3.getContext("2d").drawImage(c2, 0, 0, w, h);
+      var d2 = c3.getContext("2d").getImageData(0, 0, w, h).data;
+
+      var A = cx.createImageData(w, h);
+      var B = cx.createImageData(w, h);
+      for (var i = 0; i < d.length; i += 4) {
+        var lum = 0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2];
+        var bas = 0.299 * d2[i] + 0.587 * d2[i + 1] + 0.114 * d2[i + 2];
+        var sh = lum / Math.max(10, bas);
+        sh = Math.max(0.45, Math.min(1.6, sh));
+        A.data[i] = A.data[i + 1] = A.data[i + 2] = Math.min(sh, 1) * 255; A.data[i + 3] = 255;
+        B.data[i] = B.data[i + 1] = B.data[i + 2] = Math.max(sh - 1, 0) * 255; B.data[i + 3] = 255;
+      }
+      var cA = mkCanvas(w, h); cA.getContext("2d").putImageData(A, 0, 0);
+      var cB = mkCanvas(w, h); cB.getContext("2d").putImageData(B, 0, 0);
+      return { mult: cA, scr: cB };
+    } catch (e) { return null; }
+  }
+
+  /* ---------- subtle drape: shift rows of the pattern with a soft wave ---------- */
   function warp(tmp, amount) {
     if (amount <= 0) return;
     var w = tmp.width, h = tmp.height;
-    var band = 4;                                   /* px per row band (perf) */
+    var band = 4;
     for (var y = 0; y < h; y += band) {
-      var t = y / h;                                /* 0 top -> 1 bottom */
-      var amp = amount * w * 0.022 * t * t;         /* quadratic: more at hem */
+      var t = y / h;
+      var amp = amount * w * 0.02 * t * t;
       if (amp < 0.3) continue;
       var dx = Math.round(Math.sin(t * Math.PI * 2.2 + 0.7) * amp);
       if (!dx) continue;
@@ -140,78 +173,54 @@
     /* 1. the photo */
     ctx.drawImage(base, 0, 0, W, H);
 
-    /* pattern tile */
+    /* 2. the print, tiled at the chosen scale */
     var printImg = prints[curPrint].img;
-    var tileW = Math.max(24, Math.round(W * p.base * scale / 10000));  /* base% of W, scale% */
+    var tileW = Math.max(24, Math.round(W * p.base * scale / 10000));
     var tileH = Math.round(tileW * printImg.naturalHeight / printImg.naturalWidth);
-    var tile = document.createElement("canvas");
-    tile.width = tileW; tile.height = tileH;
+    var tile = mkCanvas(tileW, tileH);
     tile.getContext("2d").drawImage(printImg, 0, 0, tileW, tileH);
-    var pat = ctx.createPattern(tile, "repeat");
 
-    /* zones -> pixel polygons */
-    var polys = p.zones.map(function (pts) {
-      return pts.reduce(function (acc, v, i) {
-        acc.push(i % 2 === 0 ? v * W / 100 : v * H / 100);
-        return acc;
-      }, []);
-    });
+    var tmp = mkCanvas(W, H);
+    var tc = tmp.getContext("2d");
+    tc.fillStyle = ctx.createPattern(tile, "repeat");
+    tc.fillRect(0, 0, W, H);
+    warp(tmp, p.drape || 0);
 
-    function tracePoly(c, pts, ox, oy) {
-      c.moveTo(pts[0] - ox, pts[1] - oy);
-      for (var i = 2; i < pts.length; i += 2) c.lineTo(pts[i] - ox, pts[i + 1] - oy);
-      c.closePath();
-    }
-
-    ctx.save();
-    ctx.beginPath();
-    polys.forEach(function (pts) { tracePoly(ctx, pts, 0, 0); });
-    ctx.clip();
-
-    polys.forEach(function (pts, zi) {
-      /* bbox of this zone */
-      var xs = pts.filter(function (_, i) { return i % 2 === 0; });
-      var ys = pts.filter(function (_, i) { return i % 2 === 1; });
-      var zx = Math.min.apply(null, xs), zy = Math.min.apply(null, ys);
-      var zw = Math.max.apply(null, xs) - zx, zh = Math.max.apply(null, ys) - zy;
-
-      /* print on its own layer, pattern phase kept from the canvas origin */
-      var tmp = document.createElement("canvas");
-      tmp.width = Math.max(2, Math.round(zw));
-      tmp.height = Math.max(2, Math.round(zh));
-      var tc = tmp.getContext("2d");
-      tc.save();
-      tc.translate(-Math.round(zx) % tileW, -Math.round(zy) % tileH);
-      tc.fillStyle = pat;
-      tc.fillRect(0, 0, tmp.width + tileW, tmp.height + tileH);
-      tc.restore();
-
-      /* mask: polygon + feathered edge */
+    /* 3. THE PATTERNBANK STEP: clip the print by the product's alpha mask */
+    var mask = p.mask ? maskImgs[p.id] : null;
+    if (mask) {
       tc.globalCompositeOperation = "destination-in";
-      try { tc.filter = "blur(" + Math.max(3, Math.round(tmp.width * 0.012)) + "px)"; } catch (e) {}
-      tc.fillStyle = "#fff";
-      tc.beginPath();
-      tracePoly(tc, pts, zx, zy);
-      tc.fill();
-      try { tc.filter = "none"; } catch (e) {}
+      tc.drawImage(mask, 0, 0, W, H);
       tc.globalCompositeOperation = "source-over";
+    }
+    ctx.drawImage(tmp, 0, 0);
 
-      warp(tmp, p.drape);
-      ctx.drawImage(tmp, zx, zy);
-    });
-
-    /* 3. fabric texture: photo multiply darkens the print where it folds */
+    /* 4. macro shading + 5. fabric-lighting transfer through the print */
+    ctx.save();
     ctx.globalCompositeOperation = "multiply";
+    ctx.globalAlpha = 0.45;
     ctx.drawImage(base, 0, 0, W, H);
 
-    /* 4. highlight sheen: fold lights re-lighten the printed surface */
-    if (p.sheen > 0) {
+    var L = lightCache[p.id] || (lightCache[p.id] = buildLighting(base));
+    if (L) {
+      ctx.globalAlpha = p.fabric;
+      ctx.drawImage(L.mult, 0, 0, W, H);
       ctx.globalCompositeOperation = "screen";
-      ctx.globalAlpha = p.sheen;
-      ctx.drawImage(base, 0, 0, W, H);
-      ctx.globalAlpha = 1;
+      ctx.drawImage(L.scr, 0, 0, W, H);
     }
+    ctx.globalAlpha = 1;
     ctx.restore();
+
+    /* #debug: tint the mask cutout */
+    if (location.hash.indexOf("debug") > -1 && mask) {
+      var tint = mkCanvas(mask.width, mask.height);
+      var tx = tint.getContext("2d");
+      tx.drawImage(mask, 0, 0);
+      tx.globalCompositeOperation = "source-in";
+      tx.fillStyle = "rgba(232,54,143,.45)";
+      tx.fillRect(0, 0, tint.width, tint.height);
+      ctx.drawImage(tint, 0, 0, W, H);
+    }
   }
 
   /* ---------- UI wiring ---------- */
@@ -243,7 +252,7 @@
     document.body.classList.add("locked");
     fillInfo(); buildTabs();
     loading.hidden = false;
-    preloadMocks().then(render).catch(function () { loading.hidden = true; });
+    preloadAssets().then(render);
   }
   function hide() {
     open = false; root.hidden = true;
@@ -263,7 +272,6 @@
     if (e.key === "ArrowLeft")  { curProd = (curProd + PRODUCTS.length - 1) % PRODUCTS.length; syncTabs(); render(); }
   });
 
-  /* ---------- hijack archive figure clicks (before the lightbox) ---------- */
   document.addEventListener("click", function (e) {
     var fig = e.target.closest && e.target.closest(".fig");
     if (!fig) return;
