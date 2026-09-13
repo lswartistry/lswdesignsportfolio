@@ -1,13 +1,22 @@
 /* ==========================================================================
-   PRINT STUDIO v5 — Patternbank-style product try-on
-   Architecture (same as Patternbank's product views): every mockup photo
-   ships with a pre-cut ALPHA MASK (mask-<product>.png). The pattern is
-   tiled in the browser, clipped by that mask (destination-in), then a
-   fabric-lighting map (fold shadows / weave / highlights, normalised from
-   the photo) is applied THROUGH the print. Result: the print sits inside
-   the product, at its true silhouette, at any repeat scale.
-   Swap a mockup photo or mask anytime - same filename, zero code changes.
-   #debug in the URL tints the mask so you can check the cutout.
+   PRINT STUDIO v6 — Patternbank-style product try-on + COLOURWAYS
+   Same engine as v5 (mask clip + fabric-lighting transfer), plus:
+   - Any <figure class="fig"> can declare colourways via data attributes:
+
+       <figure class="fig ..." data-cursor="View"
+         data-colourways="Natural|Noir|Terracotta"
+         data-colourways-src="assets/img/Print-11A.jpg|assets/img/Print-11B.jpg|assets/img/Print-11C.jpg">
+         <div class="media"><img src="assets/img/Print-11A.jpg" ...></div>
+         <figcaption class="cap"><b>P-11</b> — Name · repeat 64 × 64 cm</figcaption>
+       </figure>
+
+     * data-colourways     = display names, separated by |
+     * data-colourways-src = one JPG per colourway, separated by |, same order
+     * The grid <img> should be the first colourway (colourway A).
+     * Prints WITHOUT these attributes behave exactly as before (v5).
+
+   - Also accepts US spelling: data-colorways / data-colorways-src.
+   - Also accepts JSON: data-colourways='[{"name":"Natural","src":"..."}]'
    ========================================================================== */
 (function () {
   "use strict";
@@ -20,7 +29,7 @@
     { id: "wallpaper", label: "Wallpaper",     file: "mock-wallpaper.jpg", mask: "mask-wallpaper.png",               base: 30, drape: 0,    fabric: 0.25 },
     { id: "dress",     label: "Dress",         file: "mock-dress.jpg",     mask: "mask-dress.png",   base: 28, drape: 0.5,  fabric: 1.0 },
     { id: "bikini",    label: "Bikini",        file: "mock-bikini.jpg",    mask: "mask-bikini.png",  base: 22, drape: 0.4,  fabric: 1.0 },
-    { id: "cushion",   label: "Cushion 45\u00D745", file: "mock-cushion.jpg", mask: "mask-cushion.png", base: 38, drape: 0,  fabric: 0.9 },
+    { id: "cushion",   label: "Cushion 45×45", file: "mock-cushion.jpg", mask: "mask-cushion.png", base: 38, drape: 0,  fabric: 0.9 },
     { id: "tote",      label: "Tote bag",      file: "mock-tote.jpg",      mask: "mask-tote.png",    base: 26, drape: 0,    fabric: 0.85 },
     { id: "notebook",  label: "Notebook A5",   file: "mock-notebook.jpg",  mask: "mask-notebook.png",base: 40, drape: 0,    fabric: 0.3 },
     { id: "rug",       label: "Rug",           file: "mock-rug.jpg",       mask: "mask-rug.png",     base: 34, drape: 0,    fabric: 0.6 }
@@ -29,7 +38,7 @@
   var MASK_DIR = "assets/img/masks/";
 
   /* ---------- state ---------- */
-  var prints = [], curPrint = 0, curProd = 0, scale = 100;
+  var prints = [], curPrint = 0, curProd = 0, curCW = 0, scale = 100;
   var mockImgs = {}, maskImgs = {}, lightCache = {}, open = false;
 
   /* ---------- build the popup once ---------- */
@@ -39,18 +48,23 @@
   root.innerHTML =
     '<div class="ps-backdrop" data-ps-close></div>' +
     '<div class="ps-panel" role="dialog" aria-modal="true" aria-label="Print studio">' +
-      '<button class="ps-close" data-ps-close aria-label="Close">\u00D7</button>' +
-      '<div class="ps-stage"><canvas></canvas><p class="ps-loading" hidden>Preparing mockup\u2026</p></div>' +
+      '<button class="ps-close" data-ps-close aria-label="Close">×</button>' +
+      '<div class="ps-stage"><canvas></canvas><p class="ps-loading" hidden>Preparing mockup…</p></div>' +
       '<aside class="ps-side">' +
        '<div class="ps-view ps-view-info">' +
-        '<p class="ps-eyebrow">Print studio \u2014 live preview</p>' +
+        '<p class="ps-eyebrow">Print studio — live preview</p>' +
         '<h3 class="ps-name"></h3>' +
         '<p class="ps-meta"></p>' +
+        '<div class="ps-cw" hidden>' +
+          '<p class="ps-cw-top"><span class="ps-lab">Colourway</span>' +
+          '<span class="ps-cw-name"></span></p>' +
+          '<div class="ps-swatches" role="listbox" aria-label="Colourways"></div>' +
+        '</div>' +
         '<div class="ps-tabs"></div>' +
         '<label class="ps-scalewrap"><span class="ps-lab">Repeat scale</span>' +
           '<input class="ps-range" type="range" min="55" max="300" value="100" step="5">' +
           '<span class="ps-val">100%</span></label>' +
-        '<p class="ps-note">Digital mockup \u2014 the print is applied in your browser. Repeat shown at 100% scale.</p>' +
+        '<p class="ps-note">Digital mockup — the print is applied in your browser. Repeat shown at 100% scale.</p>' +
         '<button class="ps-cta" type="button">Enquire about this print</button>' +
        '</div>' +
        '<form class="ps-view ps-form" hidden novalidate>' +
@@ -65,9 +79,9 @@
           '<input type="hidden" name="_subject" value="">' +
           '<input type="text" name="_gotcha" class="ps-hp" tabindex="-1" autocomplete="off" aria-hidden="true">' +
           '<button class="ps-send" type="submit">Send enquiry</button>' +
-          '<button class="ps-back" type="button">\u2190 Back to the print</button>' +
-          '<p class="ps-ok" hidden>Thank you \u2014 your enquiry is on its way. I\u2019ll get back to you within two working days.</p>' +
-          '<p class="ps-err" hidden>Something went wrong \u2014 please email lswesleydesigns@gmail.com directly.</p>' +
+          '<button class="ps-back" type="button">← Back to the print</button>' +
+          '<p class="ps-ok" hidden>Thank you — your enquiry is on its way. I’ll get back to you within two working days.</p>' +
+          '<p class="ps-err" hidden>Something went wrong — please email lswesleydesigns@gmail.com directly.</p>' +
         '</form>' +
       '</aside>' +
     '</div>';
@@ -78,6 +92,9 @@
   var tabsBox = root.querySelector(".ps-tabs");
   var nameEl  = root.querySelector(".ps-name");
   var metaEl  = root.querySelector(".ps-meta");
+  var cwBox   = root.querySelector(".ps-cw");
+  var cwName  = root.querySelector(".ps-cw-name");
+  var swBox   = root.querySelector(".ps-swatches");
   var noteEl  = root.querySelector(".ps-note");
   var range   = root.querySelector(".ps-range");
   var valEl   = root.querySelector(".ps-val");
@@ -86,27 +103,6 @@
   var form     = root.querySelector(".ps-form");
   var name2El  = root.querySelector(".ps-name2");
   var sendBtn  = root.querySelector(".ps-send");
-
-  /* ---------- collect the archive prints ---------- */
-  function collectPrints() {
-    document.querySelectorAll(".fig").forEach(function (fig) {
-      var im = fig.querySelector(".media img");
-      var cap = fig.querySelector(".cap");
-      if (!im || !cap) return;
-      var full = cap.textContent.trim();
-      var dash = full.indexOf("\u2014");
-      if (dash < 0) return;
-      var code = full.slice(0, dash).trim();
-      var rest = full.slice(dash + 1).trim();
-      var dot  = rest.indexOf("\u00B7");
-      prints.push({
-        code: code,
-        name: dot > -1 ? rest.slice(0, dot).trim() : rest,
-        meta: dot > -1 ? rest.slice(dot + 1).trim() : "",
-        img: im
-      });
-    });
-  }
 
   /* ---------- helpers ---------- */
   function loadImg(src) {
@@ -122,6 +118,87 @@
     c.width = w; c.height = h;
     return c;
   }
+  function splitPipe(s) {
+    return String(s || "").split("|").map(function (x) { return x.trim(); }).filter(function (x) { return x.length; });
+  }
+  function imgReady(im) {
+    return !!(im && im.naturalWidth > 0 && im.naturalHeight > 0);
+  }
+
+  /* Parse colourways from a <figure>. Returns array of {name, src} or null. */
+  function parseColourways(fig, fallbackSrc) {
+    var rawLabels = fig.getAttribute("data-colourways") || fig.getAttribute("data-colorways") || "";
+    var rawSrcs = fig.getAttribute("data-colourways-src") || fig.getAttribute("data-colorways-src") ||
+                  fig.getAttribute("data-colourway-src") || fig.getAttribute("data-colorway-src") || "";
+
+    rawLabels = rawLabels.trim();
+
+    /* JSON form: data-colourways='[{"name":"...","src":"..."}]' */
+    if (rawLabels.charAt(0) === "[") {
+      try {
+        var arr = JSON.parse(rawLabels);
+        if (Array.isArray(arr) && arr.length) {
+          return arr.map(function (v, i) {
+            return {
+              name: (v.name || v.label || ("Colourway " + (i + 1))).toString(),
+              src: (v.src || fallbackSrc).toString()
+            };
+          }).filter(function (v) { return !!v.src; });
+        }
+      } catch (e) { /* fall through to pipe parsing */ }
+    }
+
+    var labels = splitPipe(rawLabels);
+    var srcs = splitPipe(rawSrcs);
+
+    /* srcs only (no labels) -> auto labels A, B, C… */
+    if (!labels.length && srcs.length) {
+      labels = srcs.map(function (_, i) { return "Colourway " + String.fromCharCode(65 + i); });
+    }
+    /* labels only (no srcs) -> can't build variants, ignore */
+    if (!srcs.length) return null;
+    /* pad labels if fewer than srcs */
+    while (labels.length < srcs.length) labels.push("Colourway " + String.fromCharCode(65 + labels.length));
+
+    return srcs.map(function (s, i) { return { name: labels[i], src: s }; });
+  }
+
+  /* ---------- collect the archive prints ---------- */
+  function collectPrints() {
+    document.querySelectorAll(".fig").forEach(function (fig) {
+      var im = fig.querySelector(".media img");
+      var cap = fig.querySelector(".cap");
+      if (!im || !cap) return;
+      var full = cap.textContent.trim();
+      var dash = full.indexOf("—");
+      if (dash < 0) return;
+      var code = full.slice(0, dash).trim();
+      var rest = full.slice(dash + 1).trim();
+      var dot  = rest.indexOf("·");
+      var gridSrc = im.getAttribute("src") || im.src;
+
+      var entry = {
+        code: code,
+        name: dot > -1 ? rest.slice(0, dot).trim() : rest,
+        meta: dot > -1 ? rest.slice(dot + 1).trim() : "",
+        img: im,
+        variants: null /* filled below */
+      };
+
+      var cw = parseColourways(fig, gridSrc);
+      if (cw && cw.length > 1) {
+        entry.variants = cw.map(function (v, i) {
+          /* Reuse the grid <img> for variant 0 when srcs match (instant, no reload) */
+          var sameAsGrid = (i === 0) && (v.src === gridSrc || gridSrc.indexOf(v.src) > -1 || v.src.indexOf(gridSrc.split("/").pop()) > -1);
+          return { name: v.name, src: v.src, img: sameAsGrid ? im : null };
+        });
+      } else {
+        entry.variants = [{ name: "", src: gridSrc, img: im }];
+      }
+      prints.push(entry);
+    });
+  }
+
   function preloadAssets() {
     return Promise.all(PRODUCTS.map(function (p) {
       var jobs = [];
@@ -133,6 +210,19 @@
       }
       return Promise.all(jobs);
     }));
+  }
+
+  /* Preload all colourway JPGs for the open print (so switching is instant) */
+  function preloadVariants(pr) {
+    return Promise.all(pr.variants.map(function (v) {
+      if (imgReady(v.img)) return Promise.resolve();
+      return loadImg(v.src).then(function (im) { if (im) v.img = im; });
+    }));
+  }
+
+  function activeVariant() {
+    var pr = prints[curPrint];
+    return pr.variants[Math.min(curCW, pr.variants.length - 1)];
   }
 
   /* ---------- fabric lighting map (normalised fold shading) ---------- */
@@ -187,6 +277,18 @@
     var p = PRODUCTS[curProd];
     var base = mockImgs[p.id];
     if (!base) { loading.hidden = false; return; }
+
+    var v = activeVariant();
+    var printImg = v.img || prints[curPrint].img;
+    if (!imgReady(printImg)) {
+      /* Variant still loading — fetch it, then re-render */
+      loading.hidden = false;
+      loadImg(v.src).then(function (im) {
+        if (im) v.img = im;
+        if (open) render();
+      });
+      return;
+    }
     loading.hidden = true;
 
     var W = 1200, H = Math.round(W * base.height / base.width);
@@ -196,7 +298,6 @@
     ctx.drawImage(base, 0, 0, W, H);
 
     /* 2. the print, tiled at the chosen scale */
-    var printImg = prints[curPrint].img;
     var tileW = Math.max(24, Math.round(W * p.base * scale / 10000));
     var tileH = Math.round(tileW * printImg.naturalHeight / printImg.naturalWidth);
     var tile = mkCanvas(tileW, tileH);
@@ -259,19 +360,70 @@
   function syncTabs() {
     [].forEach.call(tabsBox.children, function (b, i) { b.classList.toggle("on", i === curProd); });
   }
+
+  /* ----- colourway swatches ----- */
+  function buildCW() {
+    var pr = prints[curPrint];
+    if (!pr.variants || pr.variants.length < 2) { cwBox.hidden = true; swBox.innerHTML = ""; return; }
+    cwBox.hidden = false;
+    swBox.innerHTML = "";
+    pr.variants.forEach(function (v, i) {
+      var b = document.createElement("button");
+      b.type = "button";
+      b.className = "ps-sw" + (i === curCW ? " on" : "");
+      b.setAttribute("role", "option");
+      b.setAttribute("aria-selected", i === curCW ? "true" : "false");
+      b.title = v.name;
+      var thumb = document.createElement("img");
+      thumb.src = v.src;
+      thumb.alt = "";
+      thumb.loading = "lazy";
+      thumb.decoding = "async";
+      var lab = document.createElement("span");
+      lab.textContent = v.name;
+      b.appendChild(thumb);
+      b.appendChild(lab);
+      b.addEventListener("click", function () {
+        if (curCW === i) return;
+        curCW = i;
+        syncCW();
+        fillInfo();
+        render();
+      });
+      swBox.appendChild(b);
+    });
+    syncCW();
+  }
+  function syncCW() {
+    var pr = prints[curPrint];
+    if (!pr.variants || pr.variants.length < 2) return;
+    cwName.textContent = "— " + pr.variants[curCW].name;
+    [].forEach.call(swBox.children, function (b, i) {
+      b.classList.toggle("on", i === curCW);
+      b.setAttribute("aria-selected", i === curCW ? "true" : "false");
+    });
+  }
+
+  function cwSuffix() {
+    var pr = prints[curPrint];
+    if (pr.variants && pr.variants.length > 1) return " — " + pr.variants[curCW].name;
+    return "";
+  }
+
   function fillInfo() {
     var pr = prints[curPrint];
     nameEl.textContent = pr.name;
-    metaEl.textContent = pr.code + (pr.meta ? " \u00B7 " + pr.meta.replace(/^\u00B7\s*/, "") : "");
-    noteEl.textContent = "Digital mockup \u2014 the print is applied in your browser." +
-      (pr.meta.indexOf("64") > -1 ? " Repeat 64 \u00D7 64 cm at 100%." : " Repeat shown at 100% scale.");
+    metaEl.textContent = pr.code + (pr.meta ? " · " + pr.meta.replace(/^·\s*/, "") : "");
+    noteEl.textContent = "Digital mockup — the print is applied in your browser." +
+      (pr.meta.indexOf("64") > -1 ? " Repeat 64 × 64 cm at 100%." : " Repeat shown at 100% scale.");
 
-    /* enquiry form: subject + pre-filled message */
-    form.querySelector('[name="_subject"]').value = "Print enquiry \u2014 " + pr.code + " " + pr.name;
-    name2El.textContent = pr.code + " \u2014 " + pr.name;
+    /* enquiry form: subject + pre-filled message (includes colourway) */
+    var fullName = pr.code + " " + pr.name + cwSuffix();
+    form.querySelector('[name="_subject"]').value = "Print enquiry — " + fullName;
+    name2El.textContent = pr.code + " — " + pr.name + cwSuffix();
     form.querySelector("[name=message]").value =
-      "Hi Loriel,\n\nI\u2019d like to know more about " + pr.code + " \u2014 " + pr.name +
-      " (from your Print Studio).\nI\u2019m interested in using it for: ";
+      "Hi Loriel,\n\nI’d like to know more about " + pr.code + " — " + pr.name + cwSuffix() +
+      " (from your Print Studio).\nI’m interested in using it for: ";
   }
   function showForm() {
     viewInfo.hidden = true;
@@ -298,7 +450,7 @@
     var btn = sendBtn;
     btn.disabled = true;
     btn.dataset.label = btn.textContent;
-    btn.textContent = "Sending\u2026";
+    btn.textContent = "Sending…";
     form.querySelector(".ps-ok").hidden = true;
     form.querySelector(".ps-err").hidden = true;
 
@@ -318,12 +470,18 @@
   });
 
   function show(idx) {
-    curPrint = idx; open = true;
+    curPrint = idx; curCW = 0; open = true;
     root.hidden = false;
     document.body.classList.add("locked");
-    fillInfo(); buildTabs(); showInfo();
+    fillInfo(); buildCW(); buildTabs(); showInfo();
     loading.hidden = false;
-    preloadAssets().then(render);
+    /* restore enquiry form if it was sent before */
+    form.querySelectorAll(".ps-field, .ps-send").forEach(function (el) { el.style.display = ""; });
+    form.querySelector(".ps-ok").hidden = true;
+    form.querySelector(".ps-err").hidden = true;
+    sendBtn.disabled = false;
+    sendBtn.textContent = sendBtn.dataset.label || "Send enquiry";
+    Promise.all([preloadAssets(), preloadVariants(prints[curPrint])]).then(render);
   }
   function hide() {
     open = false; root.hidden = true;

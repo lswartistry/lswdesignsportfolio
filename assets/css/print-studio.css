@@ -60,3 +60,16 @@ body.locked{overflow:hidden}
 .ps-ok,.ps-err{font-size:14px;line-height:1.6;margin:0}
 .ps-ok{color:#2e7d4f}
 .ps-err{color:#c4372f}
+
+/* ===== PS v6 — colourway selector (thumbnails + names) ===== */
+.ps-cw{border-top:1px solid #E2D9CD;border-bottom:1px solid #E2D9CD;padding:14px 0;display:flex;flex-direction:column;gap:10px}
+.ps-cw[hidden]{display:none}
+.ps-cw-top{display:flex;align-items:baseline;gap:8px;margin:0;flex-wrap:wrap}
+.ps-cw-name{font-family:var(--serif,Georgia,serif);font-size:16px;font-style:italic;color:var(--black,#0D0D0D)}
+.ps-swatches{display:flex;flex-wrap:wrap;gap:10px}
+.ps-sw{display:flex;flex-direction:column;align-items:center;gap:6px;background:#fff;border:1.5px solid #D8CFC4;border-radius:14px;padding:8px 8px 7px;cursor:pointer;transition:border-color .2s,box-shadow .2s,transform .2s;min-width:76px;max-width:96px}
+.ps-sw:hover{border-color:var(--rose-bright,#E8368F);transform:translateY(-1px)}
+.ps-sw.on{border-color:var(--rose-bright,#E8368F);box-shadow:0 0 0 1px var(--rose-bright,#E8368F)}
+.ps-sw img{width:60px;height:60px;object-fit:cover;border-radius:9px;display:block;background:#EAE4DB}
+.ps-sw span{font-family:var(--narrow,Arial Narrow,sans-serif);font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--black,#0D0D0D);line-height:1.25;text-align:center;word-break:break-word}
+.ps-sw.on span{color:var(--rose-bright,#E8368F)}
