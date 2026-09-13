@@ -48,7 +48,7 @@
         '<p class="ps-meta"></p>' +
         '<div class="ps-tabs"></div>' +
         '<label class="ps-scalewrap"><span class="ps-lab">Repeat scale</span>' +
-          '<input class="ps-range" type="range" min="55" max="180" value="100" step="5">' +
+          '<input class="ps-range" type="range" min="55" max="300" value="100" step="5">' +
           '<span class="ps-val">100%</span></label>' +
         '<p class="ps-note">Digital mockup \u2014 the print is applied in your browser. Repeat shown at 100% scale.</p>' +
         '<button class="ps-cta" type="button">Enquire about this print</button>' +
