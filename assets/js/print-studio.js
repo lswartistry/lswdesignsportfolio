@@ -42,6 +42,7 @@
       '<button class="ps-close" data-ps-close aria-label="Close">\u00D7</button>' +
       '<div class="ps-stage"><canvas></canvas><p class="ps-loading" hidden>Preparing mockup\u2026</p></div>' +
       '<aside class="ps-side">' +
+       '<div class="ps-view ps-view-info">' +
         '<p class="ps-eyebrow">Print studio \u2014 live preview</p>' +
         '<h3 class="ps-name"></h3>' +
         '<p class="ps-meta"></p>' +
@@ -50,7 +51,24 @@
           '<input class="ps-range" type="range" min="55" max="180" value="100" step="5">' +
           '<span class="ps-val">100%</span></label>' +
         '<p class="ps-note">Digital mockup \u2014 the print is applied in your browser. Repeat shown at 100% scale.</p>' +
-        '<a class="ps-cta" href="mailto:lswesleydesigns@gmail.com?subject=Print%20enquiry">Enquire about this print</a>' +
+        '<button class="ps-cta" type="button">Enquire about this print</button>' +
+       '</div>' +
+       '<form class="ps-view ps-form" hidden novalidate>' +
+          '<p class="ps-eyebrow">Print enquiry</p>' +
+          '<h3 class="ps-name2"></h3>' +
+          '<div class="ps-field"><label for="ps-name">Your name</label>' +
+            '<input id="ps-name" name="name" type="text" autocomplete="name" placeholder="Your name"></div>' +
+          '<div class="ps-field"><label for="ps-email">Email</label>' +
+            '<input id="ps-email" name="email" type="email" autocomplete="email" placeholder="you@studio.com" required></div>' +
+          '<div class="ps-field"><label for="ps-msg">Message</label>' +
+            '<textarea id="ps-msg" name="message" rows="6"></textarea></div>' +
+          '<input type="hidden" name="_subject" value="">' +
+          '<input type="text" name="_gotcha" class="ps-hp" tabindex="-1" autocomplete="off" aria-hidden="true">' +
+          '<button class="ps-send" type="submit">Send enquiry</button>' +
+          '<button class="ps-back" type="button">\u2190 Back to the print</button>' +
+          '<p class="ps-ok" hidden>Thank you \u2014 your enquiry is on its way. I\u2019ll get back to you within two working days.</p>' +
+          '<p class="ps-err" hidden>Something went wrong \u2014 please email lswesleydesigns@gmail.com directly.</p>' +
+        '</form>' +
       '</aside>' +
     '</div>';
   document.body.appendChild(root);
@@ -64,6 +82,10 @@
   var range   = root.querySelector(".ps-range");
   var valEl   = root.querySelector(".ps-val");
   var loading = root.querySelector(".ps-loading");
+  var viewInfo = root.querySelector(".ps-view-info");
+  var form     = root.querySelector(".ps-form");
+  var name2El  = root.querySelector(".ps-name2");
+  var sendBtn  = root.querySelector(".ps-send");
 
   /* ---------- collect the archive prints ---------- */
   function collectPrints() {
@@ -243,14 +265,63 @@
     metaEl.textContent = pr.code + (pr.meta ? " \u00B7 " + pr.meta.replace(/^\u00B7\s*/, "") : "");
     noteEl.textContent = "Digital mockup \u2014 the print is applied in your browser." +
       (pr.meta.indexOf("64") > -1 ? " Repeat 64 \u00D7 64 cm at 100%." : " Repeat shown at 100% scale.");
-    root.querySelector(".ps-cta").href =
-      "mailto:lswesleydesigns@gmail.com?subject=" + encodeURIComponent("Print enquiry \u2014 " + pr.code + " " + pr.name);
+
+    /* enquiry form: subject + pre-filled message */
+    form.querySelector('[name="_subject"]').value = "Print enquiry \u2014 " + pr.code + " " + pr.name;
+    name2El.textContent = pr.code + " \u2014 " + pr.name;
+    form.querySelector("[name=message]").value =
+      "Hi Loriel,\n\nI\u2019d like to know more about " + pr.code + " \u2014 " + pr.name +
+      " (from your Print Studio).\nI\u2019m interested in using it for: ";
   }
+  function showForm() {
+    viewInfo.hidden = true;
+    form.hidden = false;
+  }
+  function showInfo() {
+    form.hidden = true;
+    viewInfo.hidden = false;
+  }
+
+  root.querySelector(".ps-cta").addEventListener("click", showForm);
+  root.querySelector(".ps-back").addEventListener("click", showInfo);
+
+  form.addEventListener("submit", function (e) {
+    e.preventDefault();
+    var email = form.querySelector("[name=email]");
+    if (!email.value.trim() || !email.checkValidity()) {
+      email.focus();
+      email.setAttribute("aria-invalid", "true");
+      return;
+    }
+    email.removeAttribute("aria-invalid");
+
+    var btn = sendBtn;
+    btn.disabled = true;
+    btn.dataset.label = btn.textContent;
+    btn.textContent = "Sending\u2026";
+    form.querySelector(".ps-ok").hidden = true;
+    form.querySelector(".ps-err").hidden = true;
+
+    fetch("https://formspree.io/f/maewdrlg", {
+      method: "POST",
+      headers: { Accept: "application/json" },
+      body: new FormData(form)
+    }).then(function (r) {
+      if (!r.ok) throw new Error("bad status");
+      form.querySelectorAll(".ps-field, .ps-send").forEach(function (el) { el.style.display = "none"; });
+      form.querySelector(".ps-ok").hidden = false;
+    }).catch(function () {
+      btn.disabled = false;
+      btn.textContent = btn.dataset.label || "Send enquiry";
+      form.querySelector(".ps-err").hidden = false;
+    });
+  });
+
   function show(idx) {
     curPrint = idx; open = true;
     root.hidden = false;
     document.body.classList.add("locked");
-    fillInfo(); buildTabs();
+    fillInfo(); buildTabs(); showInfo();
     loading.hidden = false;
     preloadAssets().then(render);
   }
