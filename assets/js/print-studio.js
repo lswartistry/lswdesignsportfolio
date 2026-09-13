@@ -1,5 +1,11 @@
 /* ==========================================================================
-   PRINT STUDIO v6 — Patternbank-style product try-on + COLOURWAYS
+   PRINT STUDIO v6.2 — Patternbank-style product try-on + COLOURWAYS
+   v6.1: solidifyMask() — mask interiors forced fully opaque so the white
+   product photo can't ghost through dark prints (rug streak, dress/bikini
+   veil). Edge anti-aliasing preserved. Pair with repaired mask-rug.png.
+   v6.2: edge-aware highlight suppression in buildLighting() — kills the fake
+   white halos the screen pass painted around strong photo edges (wallpaper
+   ladder/plant/baseboard). Soft shading + fine texture untouched.
    Same engine as v5 (mask clip + fabric-lighting transfer), plus:
    - Any <figure class="fig"> can declare colourways via data attributes:
 
@@ -118,6 +124,28 @@
     c.width = w; c.height = h;
     return c;
   }
+  /* Solidify mask interiors: some cutouts are only 80-90% opaque (or have
+     weak streaks), letting the white product photo ghost through dark prints.
+     Alpha <=24 -> transparent, >=140 -> fully opaque, smooth ramp between
+     so edge anti-aliasing and thin straps/strings are preserved. */
+  function solidifyMask(im) {
+    try {
+      var w = im.naturalWidth || im.width, h = im.naturalHeight || im.height;
+      if (!w || !h) return im;
+      var c = mkCanvas(w, h);
+      var cx = c.getContext("2d");
+      cx.drawImage(im, 0, 0);
+      var id = cx.getImageData(0, 0, w, h), d = id.data;
+      for (var i = 3; i < d.length; i += 4) {
+        var a = d[i];
+        if (a <= 24) d[i] = 0;
+        else if (a >= 140) d[i] = 255;
+        else { var t = (a - 24) / 116; t = t * t * (3 - 2 * t); d[i] = Math.round(t * 255); }
+      }
+      cx.putImageData(id, 0, 0);
+      return c;
+    } catch (e) { return im; }
+  }
   function splitPipe(s) {
     return String(s || "").split("|").map(function (x) { return x.trim(); }).filter(function (x) { return x.length; });
   }
@@ -206,7 +234,7 @@
         jobs.push(loadImg(MOCK_DIR + p.file).then(function (im) { mockImgs[p.id] = im; }));
       }
       if (p.mask && !maskImgs[p.id]) {
-        jobs.push(loadImg(MASK_DIR + p.mask).then(function (im) { maskImgs[p.id] = im; }));
+        jobs.push(loadImg(MASK_DIR + p.mask).then(function (im) { maskImgs[p.id] = im ? solidifyMask(im) : im; }));
       }
       return Promise.all(jobs);
     }));
@@ -241,15 +269,61 @@
       c3.getContext("2d").drawImage(c2, 0, 0, w, h);
       var d2 = c3.getContext("2d").getImageData(0, 0, w, h).data;
 
+      /* v6.2: edge-aware highlight mask. The lum/baseline ratio produces fake
+         "highlights" ringing strong photo edges (ladder, plant, baseboard),
+         which screen onto dark prints as white halos. Detect edges (Sobel on
+         luminance), dilate ~4px, and suppress the screen map there. Soft
+         shading and fine texture (low gradient) are untouched. */
+      var lumA = new Float32Array(w * h), k, px;
+      for (k = 0, px = 0; k < lumA.length; k++, px += 4) {
+        lumA[k] = (0.299 * d[px] + 0.587 * d[px + 1] + 0.114 * d[px + 2]) / 255;
+      }
+      function lumAt(x, y) {
+        x = x < 0 ? 0 : (x > w - 1 ? w - 1 : x);
+        y = y < 0 ? 0 : (y > h - 1 ? h - 1 : y);
+        return lumA[y * w + x];
+      }
+      var edge = new Float32Array(w * h);
+      for (var ey = 0; ey < h; ey++) {
+        for (var ex = 0; ex < w; ex++) {
+          var gx = -lumAt(ex - 1, ey - 1) + lumAt(ex + 1, ey - 1) +
+                   -2 * lumAt(ex - 1, ey) + 2 * lumAt(ex + 1, ey) +
+                   -lumAt(ex - 1, ey + 1) + lumAt(ex + 1, ey + 1);
+          var gy = -lumAt(ex - 1, ey - 1) - 2 * lumAt(ex, ey - 1) - lumAt(ex + 1, ey - 1) +
+                   lumAt(ex - 1, ey + 1) + 2 * lumAt(ex, ey + 1) + lumAt(ex + 1, ey + 1);
+          var m = Math.sqrt(gx * gx + gy * gy) / 4;
+          var t = (m - 0.06) / 0.20;
+          t = t < 0 ? 0 : (t > 1 ? 1 : t);
+          edge[ey * w + ex] = t * t * (3 - 2 * t);
+        }
+      }
+      var dil = new Float32Array(w * h), R = 4;
+      for (var dy = 0; dy < h; dy++) {
+        for (var dx = 0; dx < w; dx++) {
+          var mx = 0;
+          for (var oy = -R; oy <= R; oy++) {
+            var yy = dy + oy;
+            if (yy < 0 || yy >= h) continue;
+            for (var ox = -R; ox <= R; ox++) {
+              var xx = dx + ox;
+              if (xx < 0 || xx >= w) continue;
+              var v = edge[yy * w + xx];
+              if (v > mx) mx = v;
+            }
+          }
+          dil[dy * w + dx] = mx;
+        }
+      }
+
       var A = cx.createImageData(w, h);
       var B = cx.createImageData(w, h);
-      for (var i = 0; i < d.length; i += 4) {
+      for (var i = 0, j = 0; i < d.length; i += 4, j++) {
         var lum = 0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2];
         var bas = 0.299 * d2[i] + 0.587 * d2[i + 1] + 0.114 * d2[i + 2];
         var sh = lum / Math.max(10, bas);
         sh = Math.max(0.45, Math.min(1.6, sh));
         A.data[i] = A.data[i + 1] = A.data[i + 2] = Math.min(sh, 1) * 255; A.data[i + 3] = 255;
-        B.data[i] = B.data[i + 1] = B.data[i + 2] = Math.max(sh - 1, 0) * 255; B.data[i + 3] = 255;
+        B.data[i] = B.data[i + 1] = B.data[i + 2] = Math.max(sh - 1, 0) * (1 - dil[j]) * 255; B.data[i + 3] = 255;
       }
       var cA = mkCanvas(w, h); cA.getContext("2d").putImageData(A, 0, 0);
       var cB = mkCanvas(w, h); cB.getContext("2d").putImageData(B, 0, 0);
