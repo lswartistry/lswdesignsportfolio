@@ -1,5 +1,5 @@
 /* ==========================================================================
-   PRINT STUDIO v6.4 — Patternbank-style product try-on + COLOURWAYS
+   PRINT STUDIO v6.8 — Patternbank-style product try-on + COLOURWAYS
    v6.1: solidifyMask() — mask interiors forced fully opaque so the white
    product photo can't ghost through dark prints (rug streak, dress/bikini
    veil). Edge anti-aliasing preserved. Pair with repaired mask-rug.png.
@@ -10,6 +10,15 @@
    of every popup mockup (canvas) + over grid thumbnails (CSS ::after).
    v6.4: faint dark offset copy behind the watermark logos (canvas + CSS
    ::before) so the white mark also reads on light prints.
+   v6.5: homepage-teaser scoping — collectPrints() binds only inside
+   #studio when present (About portrait stays a plain image); watermark
+   CSS scoped to .work-group (studio page) + #studio (homepage).
+   v6.6: popup layout is CSS-only (no JS change) — fixed popup height on
+   desktop so switching products never resizes it; airier side-panel
+   section spacing.
+   v6.8: two new product tabs — Thermal bottle (mask = body only, cap stays
+   blank) + Phone case (camera island cut out of the mask). Pair with
+   mock-bottle.jpg / mock-phone.jpg and mask-bottle.png / mask-phone.png.
    Same engine as v5 (mask clip + fabric-lighting transfer), plus:
    - Any <figure class="fig"> can declare colourways via data attributes:
 
@@ -42,7 +51,9 @@
     { id: "cushion",   label: "Cushion 45×45", file: "mock-cushion.jpg", mask: "mask-cushion.png", base: 38, drape: 0,  fabric: 0.9 },
     { id: "tote",      label: "Tote bag",      file: "mock-tote.jpg",      mask: "mask-tote.png",    base: 26, drape: 0,    fabric: 0.85 },
     { id: "notebook",  label: "Notebook A5",   file: "mock-notebook.jpg",  mask: "mask-notebook.png",base: 40, drape: 0,    fabric: 0.3 },
-    { id: "rug",       label: "Rug",           file: "mock-rug.jpg",       mask: "mask-rug.png",     base: 34, drape: 0,    fabric: 0.6 }
+    { id: "rug",       label: "Rug",           file: "mock-rug.jpg",       mask: "mask-rug.png",     base: 34, drape: 0,    fabric: 0.6 },
+    { id: "bottle",    label: "Thermal bottle", file: "mock-bottle.jpg",    mask: "mask-bottle.png",  base: 30, drape: 0,    fabric: 0.85 },
+    { id: "phone",     label: "Phone case",    file: "mock-phone.jpg",     mask: "mask-phone.png",   base: 35, drape: 0,    fabric: 0.4 }
   ];
   var MOCK_DIR = "assets/img/mockups/";
   var MASK_DIR = "assets/img/masks/";
@@ -197,9 +208,14 @@
     return srcs.map(function (s, i) { return { name: labels[i], src: s }; });
   }
 
-  /* ---------- collect the archive prints ---------- */
+  /* ---------- collect the archive prints ----------
+     v6.5: scoped — on pages with a #studio section (homepage teaser) only
+     figs inside it become try-on prints, so other page images (e.g. the
+     About portrait, also a .fig) never open the popup. */
   function collectPrints() {
-    document.querySelectorAll(".fig").forEach(function (fig) {
+    var scope = document.getElementById("studio");
+    var figs = scope ? scope.querySelectorAll(".fig") : document.querySelectorAll(".fig");
+    figs.forEach(function (fig) {
       var im = fig.querySelector(".media img");
       var cap = fig.querySelector(".cap");
       if (!im || !cap) return;
