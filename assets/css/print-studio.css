@@ -1,8 +1,19 @@
-/* ===== PRINT STUDIO — try-a-print popup ===== */
+/* ===== PRINT STUDIO v6.6 — try-a-print popup =====
+   v6.6: fixed popup height on desktop (mockups letterbox without
+   distortion, no more jumping between products) + airier side-panel
+   section spacing. */
 .pstudio{position:fixed;inset:0;z-index:1200;display:flex;align-items:center;justify-content:center;padding:clamp(10px,3vmin,32px)}
 .pstudio[hidden]{display:none}
 .ps-backdrop{position:absolute;inset:0;background:rgba(13,13,13,.62);backdrop-filter:blur(6px)}
 .ps-panel{position:relative;background:var(--paper,#F5F1EC);border-radius:20px;width:min(1040px,100%);max-height:min(760px,92vh);display:grid;grid-template-columns:1.35fr .9fr;overflow:hidden;box-shadow:0 40px 120px -30px rgba(13,13,13,.55);animation:psIn .35s cubic-bezier(.2,.9,.3,1)}
+/* Fixed frame on desktop: the stage box stays constant and each mockup
+   fits inside it undistorted (canvas already uses object-fit:contain),
+   so switching products never resizes the popup. Mobile keeps the
+   scrolling layout (see media query below). */
+@media (min-width:821px){
+  .ps-panel{height:min(760px,92vh)}
+  .ps-stage{min-height:0}
+}
 @keyframes psIn{from{transform:translateY(18px) scale(.985);opacity:0}to{transform:none;opacity:1}}
 .ps-close{position:absolute;top:14px;right:18px;z-index:3;background:var(--black,#0D0D0D);color:var(--paper,#F5F1EC);border:0;border-radius:999px;width:40px;height:40px;font-size:24px;line-height:1;cursor:pointer;transition:background .25s,transform .25s}
 .ps-close:hover{background:var(--rose-bright,#E8368F);transform:rotate(90deg)}
@@ -16,7 +27,7 @@
 .ps-name{font-family:var(--serif,Georgia,serif);font-size:clamp(26px,3vw,34px);font-weight:500;line-height:1.05;margin:0;color:var(--black,#0D0D0D)}
 .ps-meta{font-family:var(--narrow,Arial Narrow,sans-serif);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#7a7267;margin:0}
 
-.ps-tabs{display:flex;flex-wrap:wrap;gap:8px}
+.ps-tabs{display:flex;flex-wrap:wrap;gap:10px}
 .ps-tab{font-family:var(--narrow,Arial Narrow,sans-serif);font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--black,#0D0D0D);background:transparent;border:1px solid #D8CFC4;border-radius:999px;padding:9px 15px;cursor:pointer;transition:all .22s}
 .ps-tab:hover{border-color:var(--rose-bright,#E8368F);color:var(--rose-bright,#E8368F)}
 .ps-tab.on{background:var(--rose-bright,#E8368F);border-color:var(--rose-bright,#E8368F);color:#fff}
@@ -75,9 +86,12 @@ body.locked{overflow:hidden}
 .ps-sw span{font-family:var(--narrow,Arial Narrow,sans-serif);font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--black,#0D0D0D);line-height:1.25;text-align:center;word-break:break-word}
 .ps-sw.on span{color:var(--rose-bright,#E8368F)}
 
-/* ===== PS v6.4 — watermark overlay on grid thumbnails =====
-   White logos (::after) over a faint dark offset copy (::before),
-   so the mark also reads on light prints. */
-.fig .media{position:relative}
-.fig .media::before,.fig .media::after{content:"";position:absolute;inset:0;background:url(../img/Watermark.png) center center/cover no-repeat;pointer-events:none}
-.fig .media::before{filter:brightness(0);opacity:.38;transform:translate(1px,2px)}
+/* ===== PS v6.5 — watermark overlay on print thumbnails =====
+   Scoped on purpose: .work-group = print-studio page library,
+   #studio = homepage teaser. Other .fig images (About portrait)
+   stay clean. White logos (::after) over a faint dark offset
+   copy (::before), so the mark also reads on light prints. */
+.work-group .fig .media,#studio .fig .media{position:relative}
+.work-group .fig .media::before,.work-group .fig .media::after,
+#studio .fig .media::before,#studio .fig .media::after{content:"";position:absolute;inset:0;background:url(../img/Watermark.png) center center/cover no-repeat;pointer-events:none}
+.work-group .fig .media::before,#studio .fig .media::before{filter:brightness(0);opacity:.38;transform:translate(1px,2px)}
