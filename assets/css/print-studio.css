@@ -27,7 +27,7 @@
 .ps-name{font-family:var(--serif,Georgia,serif);font-size:clamp(26px,3vw,34px);font-weight:500;line-height:1.05;margin:0;color:var(--black,#0D0D0D)}
 .ps-meta{font-family:var(--narrow,Arial Narrow,sans-serif);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#7a7267;margin:0}
 
-.ps-tabs{display:flex;flex-wrap:wrap;gap:10px}
+.ps-tabs{display:flex;flex-wrap:wrap;gap:10px;padding:10px 0}
 .ps-tab{font-family:var(--narrow,Arial Narrow,sans-serif);font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--black,#0D0D0D);background:transparent;border:1px solid #D8CFC4;border-radius:999px;padding:9px 15px;cursor:pointer;transition:all .22s}
 .ps-tab:hover{border-color:var(--rose-bright,#E8368F);color:var(--rose-bright,#E8368F)}
 .ps-tab.on{background:var(--rose-bright,#E8368F);border-color:var(--rose-bright,#E8368F);color:#fff}
